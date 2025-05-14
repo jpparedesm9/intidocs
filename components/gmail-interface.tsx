@@ -61,23 +61,21 @@ export default function GmailInterface() {
 
         <div className="flex flex-1 overflow-hidden w-full max-w-full relative">
           {/* Left Sidebar */}
-          <Sidebar className="border-r border-gray-200 w-64 flex-shrink-0 bg-[#202124] text-white md:block hidden z-10">
+          <Sidebar className="border-r border-gray-200 w-64 flex-shrink-0 bg-[#202124] text-white md:block hidden z-10 pt-14">
+            <SidebarHeader className="p-4 pt-6">
+              <Button
+                onClick={handleComposeClick}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
+              >
+                <Edit3 className="h-4 w-4 mr-3" />
+                Nuevo Documento
+                <ChevronDown className="ml-auto h-4 w-4" />
+              </Button>
+            </SidebarHeader>
             <SidebarContent className="px-2">
               {/* Main Navigation */}
               <div className="mb-4">
                 <SidebarMenu>
-                 <SidebarMenuItem>
-                    <div className="p-4 pb-2">
-                <Button
-                  onClick={handleComposeClick}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
-                >
-                  <Edit3 className="h-4 w-4 mr-3" />
-                  Nuevo Documento
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                </Button>
-              </div>
-                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton isActive className="py-2 text-white hover:bg-gray-700">
                       <Mail className="h-5 w-5 mr-3" />
@@ -314,7 +312,7 @@ export default function GmailInterface() {
             <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-20">
               <div className="h-full w-64 bg-[#202124] text-white overflow-auto">
                 {/* Mobile sidebar content - copy of desktop sidebar */}
-                <div className="p-4 pb-2">
+                <div className="p-4 pt-12 pb-2">
                   <Button
                     onClick={handleComposeClick}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"

@@ -143,6 +143,35 @@ input[type="checkbox"]:hover {
 }
 
 /* Gmail sidebar styles */
+/* Add this to the Gmail sidebar styles section */
+/* Ensure proper spacing for sidebar content */
+.sidebar-fixed-spacing {
+  padding-top: 60px; /* Adjust this value as needed */
+}
+
+/* Ensure the sidebar header has proper spacing */
+[data-sidebar="header"] {
+  padding-top: 1rem;
+}
+
+/* Adjust the sidebar content to account for the fixed header */
+[data-sidebar="content"] {
+  padding-top: 0.5rem;
+}
+
+/* Add proper spacing for sidebar header */
+.sidebar-header {
+  padding-top: 16px;
+  padding-bottom: 8px;
+}
+
+/* Ensure the compose button is visible */
+.compose-button {
+  margin-top: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
 .sidebar-section-header {
   @apply flex items-center px-4 py-1 text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-700 rounded-md;
 }
@@ -202,6 +231,11 @@ input[type="checkbox"]:hover {
   .email-item > div:nth-child(6) {
     grid-area: date;
   }
+
+  /* Fix mobile sidebar spacing */
+  .mobile-sidebar-content {
+    padding-top: 60px;
+  }
 }
 
 /* Ensure full width for main content */
@@ -243,5 +277,40 @@ input[type="checkbox"]:hover {
 
 /* Remove any right margins */
 .flex-1 {
+  margin-right: 0;
+}
+
+/* Remove any right margins and ensure full width */
+.flex-1 {
+  margin-right: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure email list uses full width */
+.email-section {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure email items use full width */
+.email-item {
+  width: 100%;
+  max-width: 100%;
+  padding-right: 0;
+}
+
+/* Remove any container padding that might be causing margins */
+.container {
+  padding-right: 0;
+  padding-left: 0;
+  max-width: 100%;
+}
+
+/* Ensure the main content area uses full width */
+.main-content {
+  width: 100%;
+  max-width: 100%;
+  padding-right: 0;
   margin-right: 0;
 }
