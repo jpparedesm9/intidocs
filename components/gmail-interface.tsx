@@ -69,7 +69,7 @@ export default function GmailInterface() {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
                 >
                   <Edit3 className="h-4 w-4 mr-3" />
-                  Nuevo Documento2
+                  Nuevo Documento
                   <ChevronDown className="ml-auto h-4 w-4" />
                 </Button>
               </div>
