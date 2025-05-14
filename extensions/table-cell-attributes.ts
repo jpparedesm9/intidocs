@@ -117,4 +117,3 @@ export const TableCellAttributes = Extension.create<TableCellAttributesOptions>(
     ]
   },
 })
-

@@ -28,4 +28,3 @@ export const HorizontalRule = Node.create({
     }
   },
 })
-

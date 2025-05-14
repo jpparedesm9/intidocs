@@ -11,17 +11,14 @@ const HorizontalRuler: React.FC<HorizontalRulerProps> = ({ scrollLeft = 0 }) => 
   const markings = Array.from({ length: 17 }, (_, i) => i)
 
   return (
-    <div className="horizontal-ruler-container relative h-6 bg-[#f1f3f4] flex">
+    <div className="horizontal-ruler-container relative h-6 bg-[#f1f3f4] flex border-b border-[#e0e0e0]">
       {/* Left padding for vertical ruler */}
-      <div className="w-[40px] h-full border-r border-[#e0e0e0]"></div>
+      <div className="w-[40px] h-full border-r border-[#e0e0e0] flex-shrink-0"></div>
 
-      {/* Main ruler area - centered to match page */}
-      <div className="horizontal-ruler relative flex-1 h-full overflow-hidden flex justify-center">
-        <div
-          className="w-[816px] relative flex items-end h-full"
-          style={{ transform: `translateX(${-(scrollLeft || 0)}px)` }}
-        >
-          <div className="flex items-end h-full">
+      {/* Main ruler area */}
+      <div className="horizontal-ruler relative flex-1 h-full overflow-hidden">
+        <div className="absolute inset-0 flex justify-center">
+          <div className="relative flex items-end h-full" style={{ transform: `translateX(${-(scrollLeft % 48)}px)` }}>
             {markings.map((num) => (
               <div key={num} className="flex flex-col items-center" style={{ width: "48px" }}>
                 {/* Number label */}
@@ -46,4 +43,3 @@ const HorizontalRuler: React.FC<HorizontalRulerProps> = ({ scrollLeft = 0 }) => 
 }
 
 export default HorizontalRuler
-

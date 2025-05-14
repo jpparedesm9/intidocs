@@ -39,4 +39,3 @@ const BottomRuler: React.FC<BottomRulerProps> = ({ scrollLeft = 0 }) => {
 }
 
 export default BottomRuler
-

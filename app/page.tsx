@@ -1,10 +1,5 @@
-import DocumentEditor from "@/components/document-editor"
+import GmailInterface from "@/components/gmail-interface"
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-gray-100">
-      <DocumentEditor />
-    </main>
-  )
+  return <GmailInterface />
 }
-

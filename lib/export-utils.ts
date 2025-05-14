@@ -694,4 +694,3 @@ export async function exportToHTML(html: string, filename: string): Promise<void
     throw error
   }
 }
-

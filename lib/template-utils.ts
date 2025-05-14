@@ -52,4 +52,3 @@ export function createTemplateForm(placeholders: string[]): Record<string, strin
 
   return formData
 }
-

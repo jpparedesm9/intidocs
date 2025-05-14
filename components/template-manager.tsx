@@ -535,4 +535,3 @@ export default function TemplateManager({ editor, isOpen, onClose, getTemplates 
     </Dialog>
   )
 }
-

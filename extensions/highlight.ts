@@ -76,4 +76,3 @@ export const Highlight = Extension.create<HighlightOptions>({
     }
   },
 })
-

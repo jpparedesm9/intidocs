@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -30,9 +30,19 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+
+    /* Sidebar variables */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 221.2 83.2% 53.3%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -45,7 +55,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -62,7 +72,17 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 48%;
+
+    /* Sidebar variables */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -75,219 +95,63 @@
   }
 }
 
-/* Font size input styling */
-input[type="number"].w-16 {
-  min-width: 3rem;
-  text-align: center;
-  padding-right: 0.25rem;
-}
-
-/* Ruler styling */
-.horizontal-ruler-container {
-  height: 24px;
-  z-index: 10;
-  user-select: none;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.horizontal-ruler {
-  height: 24px;
-  z-index: 10;
-  user-select: none;
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.vertical-ruler {
-  width: 40px;
-  z-index: 10;
-  user-select: none;
-  border-right: 1px solid #e0e0e0;
-  position: relative;
-}
-
-/* Page styling */
+/* Gmail-specific styles */
 .page-container {
-  position: relative;
-  margin-bottom: 20px;
-  overflow: visible;
-  z-index: 1;
-  background-color: white;
-  /* Center the page */
-  margin-left: auto;
-  margin-right: auto;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
-/* Page content styling */
-.page-content {
-  min-height: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-.ProseMirror {
-  min-height: 100%;
-  outline: none;
-  position: relative;
-  z-index: 1;
-  cursor: text;
-  color: #202124; /* Google Docs text color */
-  font-family: "Arial", sans-serif;
-  font-size: 11pt;
-  line-height: 1.5;
-}
-
-.ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: #adb5bd;
-  pointer-events: none;
-  height: 0;
-  font-style: italic;
-}
-
-/* Horizontal rule styling */
-.horizontal-rule,
-.ProseMirror hr {
-  height: 1px;
-  background-color: #000;
-  border: none;
-  margin: 1em 0;
-}
-
-/* Page break styling */
-.page-break {
-  position: relative;
-  height: 20px;
-  margin: 20px 0;
-  border-top: 1px dashed #ccc;
-  text-align: center;
-}
-
-.page-break::before {
-  content: "Page Break";
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #f0f0f0;
-  padding: 0 10px;
-  font-size: 12px;
-  color: #666;
-}
-
-/* Table styling */
-.ProseMirror table {
-  border-collapse: collapse;
-  table-layout: fixed;
-  width: 100%;
-  margin: 0;
-  overflow: hidden;
-}
-
-.ProseMirror td,
-.ProseMirror th {
-  min-width: 1em;
-  border: 1px solid #ced4da;
-  padding: 3px 5px;
-  vertical-align: top;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.ProseMirror th {
-  font-weight: bold;
-  background-color: #f8f9fa;
-}
-
-/* Table selection */
-.ProseMirror .selectedCell:after {
-  z-index: 2;
-  position: absolute;
-  content: "";
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: rgba(200, 200, 255, 0.4);
-  pointer-events: none;
-}
-
-/* Table column resize handle */
-.tableColumnResizing {
-  cursor: col-resize;
-}
-
-.ProseMirror .column-resize-handle {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: #adf;
-  pointer-events: none;
-}
-
-/* Image styling */
-.ProseMirror img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Lists */
-.ProseMirror ul,
-.ProseMirror ol {
-  padding-left: 1.5em;
-}
-
-.ProseMirror li {
-  margin-bottom: 0.5em;
-}
-
-/* Link styling */
-.ProseMirror a {
-  color: #1a73e8; /* Google blue */
-  text-decoration: underline;
+/* Custom checkbox styling to match Gmail */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border: 1px solid #dadce0;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* Print styles */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .page-container,
-  .page-container * {
-    visibility: visible;
-  }
-  .page-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  .horizontal-ruler-container,
-  .vertical-ruler {
-    display: none !important;
-  }
-  .page-break {
-    page-break-after: always;
-    visibility: hidden;
-    height: 0;
-  }
-  .page-break::before {
-    content: none;
-  }
-  .horizontal-rule,
-  hr {
-    border-top: 1px solid #000;
-    margin: 1em 0;
-  }
+input[type="checkbox"]:checked {
+  background-color: #1a73e8;
+  border-color: #1a73e8;
 }
 
+input[type="checkbox"]:checked::after {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+input[type="checkbox"]:hover {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2);
+}
+
+/* Email list styles */
+.email-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(150px, 1fr) minmax(0, 3fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compose page specific styles */
+.compose-container {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+/* Document editor styles */
+.horizontal-ruler-container,
+.vertical-ruler {
+  z-index: 10;
+}

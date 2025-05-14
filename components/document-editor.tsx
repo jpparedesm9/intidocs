@@ -387,51 +387,56 @@ export default function DocumentEditor() {
         {/* Horizontal ruler */}
         <HorizontalRuler scrollLeft={scrollPosition.x} />
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Main content area with rulers and document */}
-          <div className="flex w-full h-full">
-            {/* Vertical ruler - positioned against the left edge */}
-            <VerticalRuler scrollTop={scrollPosition.y} />
+        {/* Main content area with document and rulers */}
+        <div className="flex-1 overflow-hidden">
+          <div className="relative h-full">
+            {/* Document container with vertical ruler */}
+            <div ref={editorContainerRef} className="absolute inset-0 overflow-auto">
+              <div className="flex min-h-full">
+                {/* Vertical ruler */}
+                <VerticalRuler scrollTop={scrollPosition.y} />
 
-            {/* Document content area with centered page */}
-            <div ref={editorContainerRef} className="flex-1 overflow-auto bg-[#f1f3f4] flex flex-col">
-              <div className="flex-1 py-4 flex justify-center">
-                <div
-                  className={cn(
-                    "page-container relative bg-white",
-                    "w-[816px] min-h-[1056px]", // US Letter size in pixels (8.5" x 11")
-                    "border border-gray-200", // Lighter border
-                    "shadow-[0_1px_3px_rgba(60,64,67,0.15)]", // More subtle shadow like Google Docs
-                  )}
-                  onClick={() => {
-                    try {
-                      if (editor && editor.commands && editor.commands.focus) {
-                        editor.commands.focus()
+                {/* Document content area with centered page */}
+                <div className="flex-1 py-4 flex justify-center">
+                  <div
+                    className={cn(
+                      "page-container relative bg-white",
+                      "w-[816px] min-h-[1056px]", // US Letter size in pixels (8.5" x 11")
+                      "border border-gray-200", // Lighter border
+                      "shadow-[0_1px_3px_rgba(60,64,67,0.15)]", // More subtle shadow like Google Docs
+                    )}
+                    onClick={() => {
+                      try {
+                        if (editor && editor.commands && editor.commands.focus) {
+                          editor.commands.focus()
+                        }
+                      } catch (error) {
+                        console.error("Error focusing editor:", error)
+                        setEditorError(
+                          `Error focusing editor: ${error instanceof Error ? error.message : String(error)}`,
+                        )
                       }
-                    } catch (error) {
-                      console.error("Error focusing editor:", error)
-                      setEditorError(`Error focusing editor: ${error instanceof Error ? error.message : String(error)}`)
-                    }
-                  }}
-                >
-                  <EditorContent editor={editor} className="page-content p-[1in]" />
+                    }}
+                  >
+                    <EditorContent editor={editor} className="page-content p-[1in]" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Status indicator (similar to Google Docs) */}
-          <div className="absolute bottom-10 right-4 bg-white rounded-md shadow-sm border border-gray-200 text-xs p-2 z-10">
-            <div className="flex flex-col">
-              <div className="text-gray-600">Editor Status:</div>
-              <div className="flex items-center mt-1">
-                <span className="mr-2">Editable:</span>
-                <span className="text-green-600">✓</span>
-              </div>
-              <div className="flex items-center">
-                <span className="mr-2">Focused:</span>
-                <span className="text-green-600">✓</span>
-              </div>
+        {/* Status indicator (similar to Google Docs) */}
+        <div className="absolute bottom-10 right-4 bg-white rounded-md shadow-sm border border-gray-200 text-xs p-2 z-10">
+          <div className="flex flex-col">
+            <div className="text-gray-600">Editor Status:</div>
+            <div className="flex items-center mt-1">
+              <span className="mr-2">Editable:</span>
+              <span className="text-green-600">✓</span>
+            </div>
+            <div className="flex items-center">
+              <span className="mr-2">Focused:</span>
+              <span className="text-green-600">✓</span>
             </div>
           </div>
         </div>
@@ -442,4 +447,3 @@ export default function DocumentEditor() {
     </ErrorBoundary>
   )
 }
-
