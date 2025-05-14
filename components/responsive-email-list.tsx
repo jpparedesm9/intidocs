@@ -34,7 +34,7 @@ export function EmailItem({
   return (
     <div
       className={cn(
-        "flex items-center px-4 py-2 border-b hover:bg-gray-100 cursor-pointer w-full",
+        "flex items-center px-4 py-2 border-b hover:bg-gray-100 cursor-pointer w-full max-w-full",
         !read && "font-medium",
         isSelected && "bg-blue-50",
       )}

@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 
 export function GmailTopBar() {
   return (
-    <div className="w-full flex items-center justify-between px-4 py-2 border-b bg-white">
-      <div className="flex items-center gap-4 flex-1 max-w-3xl">
+    <div className="w-full flex items-center justify-between px-4 py-2 border-b bg-white z-20 relative">
+      <div className="flex items-center gap-4 flex-1 md:ml-64 ml-0 transition-all">
         {/* Gmail Logo - only visible on larger screens */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center md:absolute md:left-4">
           <svg height="24" viewBox="0 0 75 24" width="75" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" fillRule="evenodd">
               <path d="M.5 0h74v24H.5z" />

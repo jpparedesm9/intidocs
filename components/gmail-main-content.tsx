@@ -119,7 +119,7 @@ export function GmailMainContent() {
   }))
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden w-full max-w-full">
+    <div className="flex-1 flex flex-col overflow-hidden w-full max-w-full pl-0 md:pl-0 box-border">
       {/* No tabs - removed as requested */}
 
       {/* Inbox Header */}

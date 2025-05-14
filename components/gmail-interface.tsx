@@ -59,11 +59,15 @@ export default function GmailInterface() {
         {/* Top Bar with Search and Profile */}
         <GmailTopBar />
 
-        <div className="flex flex-1 overflow-hidden w-full">
+        <div className="flex flex-1 overflow-hidden w-full max-w-full relative">
           {/* Left Sidebar */}
-          <Sidebar className="border-r border-gray-200 w-64 flex-shrink-0 bg-[#202124] text-white md:block hidden">
-            <SidebarHeader className="p-0">
-              <div className="p-4 pb-2">
+          <Sidebar className="border-r border-gray-200 w-64 flex-shrink-0 bg-[#202124] text-white md:block hidden z-10">
+            <SidebarContent className="px-2">
+              {/* Main Navigation */}
+              <div className="mb-4">
+                <SidebarMenu>
+                 <SidebarMenuItem>
+                    <div className="p-4 pb-2">
                 <Button
                   onClick={handleComposeClick}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
@@ -73,11 +77,7 @@ export default function GmailInterface() {
                   <ChevronDown className="ml-auto h-4 w-4" />
                 </Button>
               </div>
-            </SidebarHeader>
-            <SidebarContent className="px-2">
-              {/* Main Navigation */}
-              <div className="mb-4">
-                <SidebarMenu>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton isActive className="py-2 text-white hover:bg-gray-700">
                       <Mail className="h-5 w-5 mr-3" />
@@ -291,8 +291,15 @@ export default function GmailInterface() {
             </SidebarContent>
           </Sidebar>
 
-          {/* Mobile sidebar toggle button - only visible on small screens */}
-          <div className="md:hidden fixed bottom-4 left-4 z-10">
+          {/* Mobile buttons - only visible on small screens */}
+          <div className="md:hidden fixed bottom-4 left-4 z-10 flex gap-2">
+            <Button
+              onClick={handleComposeClick}
+              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+            >
+              <Edit3 className="h-5 w-5 mr-2" />
+              Nuevo
+            </Button>
             <Button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
@@ -313,7 +320,7 @@ export default function GmailInterface() {
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
                   >
                     <Edit3 className="h-4 w-4 mr-3" />
-                    New Mail2
+                    Nuevo Documento
                     <ChevronDown className="ml-auto h-4 w-4" />
                   </Button>
                 </div>
