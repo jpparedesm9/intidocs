@@ -35,13 +35,13 @@
     --radius: 0.5rem;
 
     /* Sidebar variables */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 0 0% 13%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 221.2 83.2% 53.3%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -136,22 +136,112 @@ input[type="checkbox"]:hover {
   box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2);
 }
 
-/* Email list styles */
-.email-row {
-  display: grid;
-  grid-template-columns: auto auto minmax(150px, 1fr) minmax(0, 3fr) auto;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Compose page specific styles */
-.compose-container {
-  border-radius: 8px;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-}
-
 /* Document editor styles */
 .horizontal-ruler-container,
 .vertical-ruler {
   z-index: 10;
+}
+
+/* Gmail sidebar styles */
+.sidebar-section-header {
+  @apply flex items-center px-4 py-1 text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-700 rounded-md;
+}
+
+.sidebar-section-content {
+  @apply mt-1 pl-4;
+}
+
+/* Email list styles */
+.email-item {
+  width: 100%;
+  padding-right: 0;
+  @apply flex items-center px-4 py-2 border-b hover:bg-gray-100 cursor-pointer;
+}
+
+.email-item-selected {
+  @apply bg-blue-50;
+}
+
+.email-item-unread {
+  @apply font-medium;
+}
+
+.email-section-header {
+  @apply px-4 py-2 bg-gray-50 text-sm font-medium text-gray-600;
+}
+
+/* Responsive email list styles */
+@media (max-width: 768px) {
+  .email-item {
+    @apply grid grid-cols-[auto_1fr_auto];
+    grid-template-areas:
+      "checkbox sender date"
+      "empty subject size";
+  }
+
+  .email-item > div:nth-child(1) {
+    grid-area: checkbox;
+  }
+
+  .email-item > div:nth-child(2) {
+    grid-area: empty;
+  }
+
+  .email-item > div:nth-child(3) {
+    grid-area: sender;
+  }
+
+  .email-item > div:nth-child(4) {
+    grid-area: subject;
+  }
+
+  .email-item > div:nth-child(5) {
+    grid-area: size;
+  }
+
+  .email-item > div:nth-child(6) {
+    grid-area: date;
+  }
+}
+
+/* Ensure full width for main content */
+.main-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ensure email list uses full width */
+.email-section {
+  width: 100%;
+}
+
+/* Responsive search bar */
+.search-container {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .search-container {
+    max-width: 100%;
+  }
+}
+
+/* Profile button styles */
+.profile-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove any right margins */
+.flex-1 {
+  margin-right: 0;
 }
