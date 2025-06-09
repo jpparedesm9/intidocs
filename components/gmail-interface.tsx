@@ -1,7 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Mail, Plus, X, CheckSquare, Eye, Settings, LayoutGrid } from "lucide-react"
+import {
+  Send,
+  ChevronDown,
+  ChevronRight,
+  Inbox,
+  Edit3,
+  Trash2,
+  Mail,
+  FileText,
+  Box,
+  Plus,
+  X,
+  CheckSquare,
+  Eye,
+  Settings,
+  Bell,
+  LayoutGrid,
+  History,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sidebar,
@@ -15,6 +33,7 @@ import {
 import { GmailTopBar } from "./gmail-top-bar"
 import { DynamicContent } from "./dynamic-content"
 import { Toaster } from "@/components/ui/toaster"
+import { NewDocumentModal } from "./new-document-modal"
 
 export default function GmailInterface() {
   const [expandedSections, setExpandedSections] = useState({
@@ -23,6 +42,7 @@ export default function GmailInterface() {
   })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard")
+  const [isNewDocumentModalOpen, setIsNewDocumentModalOpen] = useState(false)
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
@@ -32,8 +52,7 @@ export default function GmailInterface() {
   }
 
   const handleComposeClick = () => {
-    // Open editor in a new tab
-    window.open("/compose", "_blank")
+    setIsNewDocumentModalOpen(true)
   }
 
   const handleMenuItemClick = (itemId: string) => {
@@ -54,7 +73,6 @@ export default function GmailInterface() {
           {/* Left Sidebar */}
           <Sidebar className="border-r border-gray-200 w-64 flex-shrink-0 bg-[#202124] text-white md:block hidden z-10 pt-14">
             <SidebarHeader className="p-4 pt-6">
-              {/* Botón "Nuevo Documento" - Comentado temporalmente
               <Button
                 onClick={handleComposeClick}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
@@ -63,7 +81,6 @@ export default function GmailInterface() {
                 Nuevo Documento
                 <ChevronDown className="ml-auto h-4 w-4" />
               </Button>
-              */}
             </SidebarHeader>
             <SidebarContent className="px-2">
               {/* Trámites Section */}
@@ -160,7 +177,7 @@ export default function GmailInterface() {
                 )}
               </div>
 
-              {/* Folders Section - Comentado temporalmente
+              {/* Folders Section */}
               <div className="mt-2">
                 <div
                   onClick={() => toggleSection("folders")}
@@ -269,6 +286,40 @@ export default function GmailInterface() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton
+                        isActive={selectedMenuItem === "enviar"}
+                        className={`py-2 hover:bg-gray-700 ${
+                          selectedMenuItem === "enviar"
+                            ? "bg-blue-600 text-white font-medium rounded-md"
+                            : "text-gray-300"
+                        }`}
+                        onClick={() => handleMenuItemClick("enviar")}
+                      >
+                        <Send className="h-4 w-4 mr-3" />
+                        <span>Enviar</span>
+                      </SidebarMenuButton>
+                      {selectedMenuItem === "enviar" && (
+                        <div className="absolute left-0 top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                      )}
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={selectedMenuItem === "historial"}
+                        className={`py-2 hover:bg-gray-700 ${
+                          selectedMenuItem === "historial"
+                            ? "bg-blue-600 text-white font-medium rounded-md"
+                            : "text-gray-300"
+                        }`}
+                        onClick={() => handleMenuItemClick("historial")}
+                      >
+                        <History className="h-4 w-4 mr-3" />
+                        <span>Historial</span>
+                      </SidebarMenuButton>
+                      {selectedMenuItem === "historial" && (
+                        <div className="absolute left-0 top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                      )}
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
                         isActive={selectedMenuItem === "informados"}
                         className={`py-2 hover:bg-gray-700 ${
                           selectedMenuItem === "informados"
@@ -322,13 +373,11 @@ export default function GmailInterface() {
                   </SidebarMenu>
                 )}
               </div>
-              */}
             </SidebarContent>
           </Sidebar>
 
           {/* Mobile buttons - only visible on small screens */}
           <div className="md:hidden fixed bottom-4 left-4 z-10 flex gap-2">
-            {/* Botón móvil "Nuevo" - Comentado temporalmente
             <Button
               onClick={handleComposeClick}
               className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
@@ -336,7 +385,6 @@ export default function GmailInterface() {
               <Edit3 className="h-5 w-5 mr-2" />
               Nuevo
             </Button>
-            */}
             <Button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
@@ -352,7 +400,6 @@ export default function GmailInterface() {
               <div className="h-full w-64 bg-[#202124] text-white overflow-auto">
                 {/* Mobile sidebar content - copy of desktop sidebar */}
                 <div className="p-4 pt-12 pb-2">
-                  {/* Botón móvil "Nuevo Documento" - Comentado temporalmente
                   <Button
                     onClick={handleComposeClick}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
@@ -361,7 +408,6 @@ export default function GmailInterface() {
                     Nuevo Documento
                     <ChevronDown className="ml-auto h-4 w-4" />
                   </Button>
-                  */}
                 </div>
                 {/* Mobile sidebar menu items */}
                 <div className="p-4">
@@ -399,7 +445,6 @@ export default function GmailInterface() {
                     </div>
                   </div>
 
-                  {/* Sección móvil "BANDEJAS" - Comentada temporalmente
                   <div className="mt-4">
                     <div className="flex items-center px-4 py-1 text-sm font-medium text-gray-300">BANDEJAS</div>
                     <div className="mt-2 pl-4">
@@ -418,9 +463,66 @@ export default function GmailInterface() {
                         <Send className="h-4 w-4 mr-3" />
                         <span>Enviados</span>
                       </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "archivados" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("archivados")}
+                      >
+                        <Box className="h-4 w-4 mr-3" />
+                        <span>Archivados</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "reasignados" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("reasignados")}
+                      >
+                        <Mail className="h-4 w-4 mr-3" />
+                        <span>Reasignados</span>
+                        <span className="ml-auto text-sm">43</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "elaboracion" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("elaboracion")}
+                      >
+                        <Edit3 className="h-4 w-4 mr-3" />
+                        <span>En Elaboración</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "enviar" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("enviar")}
+                      >
+                        <Send className="h-4 w-4 mr-3" />
+                        <span>Enviar</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "historial" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("historial")}
+                      >
+                        <History className="h-4 w-4 mr-3" />
+                        <span>Historial</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "informados" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("informados")}
+                      >
+                        <Bell className="h-4 w-4 mr-3" />
+                        <span>Informados</span>
+                        <span className="ml-auto text-sm">4</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "templates" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("templates")}
+                      >
+                        <FileText className="h-4 w-4 mr-3" />
+                        <span>Templates</span>
+                      </div>
+                      <div
+                        className={`py-2 flex items-center hover:bg-gray-700 rounded-md px-4 cursor-pointer ${selectedMenuItem === "eliminados" ? "bg-blue-600 text-white font-medium" : "text-gray-300"}`}
+                        onClick={() => handleMenuItemClick("eliminados")}
+                      >
+                        <Trash2 className="h-4 w-4 mr-3" />
+                        <span>Eliminados</span>
+                      </div>
                     </div>
                   </div>
-                  */}
                 </div>
                 <Button
                   onClick={() => setMobileMenuOpen(false)}
@@ -440,6 +542,9 @@ export default function GmailInterface() {
           </div>
         </div>
       </div>
+
+      {/* New Document Modal */}
+      <NewDocumentModal isOpen={isNewDocumentModalOpen} onClose={() => setIsNewDocumentModalOpen(false)} />
 
       {/* Toast notifications */}
       <Toaster />

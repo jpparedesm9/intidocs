@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ToastContainer } from "./toast"
 import HorizontalRuler from "./horizontal-ruler"
 import VerticalRuler from "./vertical-ruler"
+import { useSearchParams } from "next/navigation"
 
 export default function DocumentEditor() {
   const [documentTitle, setDocumentTitle] = useState("Untitled Document")
@@ -40,6 +41,9 @@ export default function DocumentEditor() {
   const { toast, dismiss, toasts } = useToast()
   const editorContainerRef = useRef<HTMLDivElement>(null)
   const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 })
+  const [documentData, setDocumentData] = useState(null)
+  const [isLoadingDocument, setIsLoadingDocument] = useState(false)
+  const searchParams = useSearchParams()
 
   // Initialize editor with extensions
   const editor = useEditor({
@@ -207,6 +211,51 @@ export default function DocumentEditor() {
     }
   }
 
+  // Load document from API
+  const loadDocumentFromAPI = async (documentId: string) => {
+    setIsLoadingDocument(true)
+    try {
+      const response = await fetch(`/api/documents/${documentId}`)
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.success && result.data) {
+        const docData = result.data
+        setDocumentData(docData)
+        setDocumentTitle(docData.subject || "Untitled Document")
+        setDocumentId(documentId)
+
+        // Set content in editor
+        if (editor && docData.body) {
+          editor.commands.setContent(docData.body)
+        }
+
+        toast({
+          title: "Documento cargado",
+          description: `"${docData.subject}" se ha cargado correctamente.`,
+          variant: "success",
+        })
+      } else {
+        throw new Error(result.message || "Error al cargar el documento")
+      }
+    } catch (error) {
+      console.error("Error loading document:", error)
+      toast({
+        title: "Error al cargar",
+        description: "No se pudo cargar el documento. Creando uno nuevo.",
+        variant: "destructive",
+      })
+      // Fallback to creating new document
+      createNewDocument()
+    } finally {
+      setIsLoadingDocument(false)
+    }
+  }
+
   // Save the current document
   const saveDocument = (content: any = editor?.getJSON?.()) => {
     try {
@@ -279,17 +328,25 @@ export default function DocumentEditor() {
     }
   }
 
-  // Create a new document if none exists
+  // Load document from URL parameter or create new one
   useEffect(() => {
     try {
-      if (!documentId && editor) {
-        createNewDocument()
+      if (editor) {
+        const documentIdFromURL = searchParams.get("documentId")
+
+        if (documentIdFromURL && !documentId) {
+          // Load existing document
+          loadDocumentFromAPI(documentIdFromURL)
+        } else if (!documentId) {
+          // Create new document
+          createNewDocument()
+        }
       }
     } catch (error) {
       console.error("Error in document initialization:", error)
       setEditorError(`Error initializing document: ${error instanceof Error ? error.message : String(error)}`)
     }
-  }, [editor, documentId])
+  }, [editor, documentId, searchParams])
 
   // Ensure editor is focused and editable
   useEffect(() => {
@@ -352,8 +409,15 @@ export default function DocumentEditor() {
     }
   }, [])
 
-  if (!editor) {
-    return <div className="flex items-center justify-center h-screen">Loading editor...</div>
+  if (!editor || isLoadingDocument) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="text-lg mb-2">{isLoadingDocument ? "Cargando documento..." : "Cargando editor..."}</div>
+          {isLoadingDocument && <div className="text-sm text-gray-500">Obteniendo información del documento...</div>}
+        </div>
+      </div>
+    )
   }
 
   return (

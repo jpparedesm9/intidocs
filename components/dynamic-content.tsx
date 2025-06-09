@@ -6,6 +6,8 @@ import { TrackingManagement } from "./tracking-management"
 import { AdministrationManagement } from "./administration-management"
 import { EmptyContent } from "./empty-content"
 import { DashboardView } from "./dashboard-view"
+import { DocumentSend } from "./document-send"
+import { DocumentHistory } from "./document-history"
 
 interface DynamicContentProps {
   selectedMenuItem: string
@@ -24,6 +26,10 @@ export function DynamicContent({ selectedMenuItem }: DynamicContentProps) {
       return <TrackingManagement />
     case "administracion":
       return <AdministrationManagement />
+    case "enviar":
+      return <DocumentSend />
+    case "historial":
+      return <DocumentHistory />
     default:
       return <EmptyContent selectedSection={selectedMenuItem} />
   }
