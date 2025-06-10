@@ -34,6 +34,17 @@ import { useSearchParams } from "next/navigation"
 const DocumentHeader = dynamic(() => import("./document-header"), { ssr: false })
 const EnhancedToolbar = dynamic(() => import("./enhanced-toolbar"), { ssr: false })
 const RecipientSearchPanel = dynamic(() => import("./recipient-search-panel"), { ssr: false })
+const AttachmentManager = dynamic(() => import("./attachment-manager"), { ssr: false })
+
+interface AttachmentFile {
+  id: string
+  name: string
+  size: number
+  type: string
+  url?: string
+  uploadProgress?: number
+  status: "uploading" | "completed" | "error"
+}
 
 export default function DocumentEditor() {
   const [documentTitle, setDocumentTitle] = useState("Untitled Document")
@@ -47,6 +58,8 @@ export default function DocumentEditor() {
   const [documentData, setDocumentData] = useState(null)
   const [isLoadingDocument, setIsLoadingDocument] = useState(false)
   const [isRecipientPanelOpen, setIsRecipientPanelOpen] = useState(false)
+  const [isAttachmentManagerOpen, setIsAttachmentManagerOpen] = useState(false)
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([])
   const [recipients, setRecipients] = useState<{
     to: Array<{ id: string; name: string; email: string; institution?: string }>
     cc: Array<{ id: string; name: string; email: string; institution?: string }>
@@ -525,6 +538,11 @@ export default function DocumentEditor() {
     setSender(null)
   }, [])
 
+  // Handle attachment changes
+  const handleAttachmentsChange = useCallback((newAttachments: AttachmentFile[]) => {
+    setAttachments(newAttachments)
+  }, [])
+
   // Memoize document container click handler - must be defined before any conditional returns
   const handleDocumentContainerClick = useCallback(() => {
     try {
@@ -582,13 +600,19 @@ export default function DocumentEditor() {
           isSaving={isSaving}
           recipients={recipients}
           sender={sender}
+          attachments={attachments}
           onRecipientRemove={handleRecipientRemove}
           onSenderRemove={handleSenderRemove}
           onOpenRecipientSearch={() => setIsRecipientPanelOpen(true)}
+          onOpenAttachmentManager={() => setIsAttachmentManagerOpen(true)}
         />
 
         {/* Enhanced Toolbar */}
-        <EnhancedToolbar editor={editor} />
+        <EnhancedToolbar
+          editor={editor}
+          onOpenAttachmentManager={() => setIsAttachmentManagerOpen(true)}
+          attachmentCount={attachments.length}
+        />
 
         {/* Horizontal ruler */}
         <HorizontalRuler scrollLeft={scrollPosition.x} />
@@ -621,6 +645,24 @@ export default function DocumentEditor() {
           onSenderSelect={handleSenderSelect}
           existingRecipients={[...recipients.to, ...recipients.cc]}
           currentSender={sender}
+        />
+
+        {/* Attachment Manager */}
+        <AttachmentManager
+          isOpen={isAttachmentManagerOpen}
+          onClose={() => setIsAttachmentManagerOpen(false)}
+          attachments={attachments}
+          onAttachmentsChange={handleAttachmentsChange}
+          maxFileSize={10}
+          allowedTypes={[
+            "image/*",
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain",
+          ]}
         />
 
         {/* Toast notifications */}

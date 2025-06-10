@@ -14,20 +14,16 @@ import {
   Heading2,
   List,
   ListOrdered,
-  ImageIcon,
-  FileQuestionIcon as FileBreak,
-  Link,
-  Unlink,
   Strikethrough,
   Type,
   Palette,
   Highlighter,
   Undo,
   Redo,
-  Printer,
   ChevronDown,
   Minus,
   FileIcon as FileTemplate,
+  Paperclip,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -46,9 +42,15 @@ import TemplateManager from "./template-manager"
 
 interface EnhancedToolbarProps {
   editor: Editor
+  onOpenAttachmentManager?: () => void
+  attachmentCount?: number
 }
 
-const EnhancedToolbar = memo(function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
+const EnhancedToolbar = memo(function EnhancedToolbar({
+  editor,
+  onOpenAttachmentManager,
+  attachmentCount = 0,
+}: EnhancedToolbarProps) {
   const [fontSize, setFontSize] = useState(11)
   const [fontFamily, setFontFamily] = useState("Arial")
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
@@ -473,7 +475,22 @@ const EnhancedToolbar = memo(function EnhancedToolbar({ editor }: EnhancedToolba
         >
           <Minus className="h-4 w-4" />
         </Button>
-        {/* Template Button */}
+        {/* Attachments Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onOpenAttachmentManager}
+          title="Adjuntar archivos"
+          className="h-8 px-2 flex items-center gap-1"
+        >
+          <Paperclip className="h-4 w-4" />
+          <span className="text-xs">Adjuntos</span>
+          {attachmentCount > 0 && (
+            <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5 ml-1 min-w-[20px] h-5 flex items-center justify-center">
+              {attachmentCount}
+            </span>
+          )}
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -495,8 +512,6 @@ const EnhancedToolbar = memo(function EnhancedToolbar({ editor }: EnhancedToolba
           <FileTemplate className="h-4 w-4" />
           <span className="text-xs">Vista Previa</span>
         </Button>
-
-        
       </div>
 
       {/* Template Manager Dialog */}
