@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, FileText } from "lucide-react"
+import { apiClient } from "@/lib/api"
 
 interface NewDocumentModalProps {
   isOpen: boolean
@@ -38,23 +39,14 @@ export function NewDocumentModal({ isOpen, onClose }: NewDocumentModalProps) {
     setIsCreating(true)
 
     try {
-      // Create document via API
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject: subject.trim(),
-          tags: [],
-        }),
+      // Create document via API client (que usa la URL correcta)
+      console.log("Creating document with subject:", subject.trim())
+      const result = await apiClient.createDocument({
+        subject: subject.trim(),
+        tags: [],
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const result = await response.json()
+      console.log("Document creation result:", result)
 
       if (result.success && result.data?.documentId) {
         toast({

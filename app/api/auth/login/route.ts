@@ -11,27 +11,14 @@ export async function POST(request: NextRequest) {
     console.log("=== LOGIN PROXY DEBUG ===")
     console.log("1. Request received at Next.js API route")
     console.log("2. Target URL:", fullUrl)
-    console.log("3. Full URL being called:", fullUrl)
-    console.log("4. Request body:", { username: body.username, password: "***" })
-
-    // Verify the URL is correct
-    if (!fullUrl.includes("/api/intdocs/auth/login")) {
-      console.error("ERROR: Incorrect endpoint URL constructed!")
-      return NextResponse.json(
-        {
-          error: "Internal configuration error",
-          details: `Expected URL to contain '/api/intdocs/auth/login' but got: ${fullUrl}`,
-        },
-        { status: 500 },
-      )
-    }
-
-    console.log("5. Testing backend connectivity to:", fullUrl)
+    console.log("3. Request body:", { username: body.username, password: "***" })
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
     try {
+      console.log("4. Making fetch request to:", fullUrl)
+
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
@@ -44,41 +31,66 @@ export async function POST(request: NextRequest) {
 
       clearTimeout(timeoutId)
 
-      console.log("6. Backend response status:", response.status)
+      console.log("5. Backend response status:", response.status)
+      console.log("6. Backend response ok:", response.ok)
       console.log("7. Backend response headers:", Object.fromEntries(response.headers.entries()))
 
+      // Get the response text first to see what we're dealing with
+      const responseText = await response.text()
+      console.log("8. Raw response text:", responseText.substring(0, 500) + (responseText.length > 500 ? "..." : ""))
+
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error("8. Backend error response:", errorText)
+        console.error("9. Backend error - Status:", response.status)
+        console.error("10. Backend error - Response:", responseText)
 
         return NextResponse.json(
           {
             error: `Backend server error: ${response.status} ${response.statusText}`,
-            details: errorText,
+            details: responseText,
             backendUrl: fullUrl,
             endpoint: LOGIN_ENDPOINT,
+            responseStatus: response.status,
           },
           { status: response.status },
         )
       }
 
-      const data = await response.json()
-      console.log("9. Backend success response:", {
-        success: data.success,
-        hasToken: !!data.data?.token,
-        message: data.message,
-      })
+      // Try to parse as JSON
+      let data
+      try {
+        data = JSON.parse(responseText)
+        console.log("11. Successfully parsed JSON response:", {
+          success: data.success,
+          hasToken: !!data.data?.token,
+          message: data.message,
+        })
+      } catch (jsonError) {
+        console.error("12. Failed to parse JSON response:", jsonError)
+        console.error("13. Response was:", responseText)
+
+        return NextResponse.json(
+          {
+            error: "Backend returned invalid JSON",
+            details: `Response was not valid JSON: ${responseText.substring(0, 200)}`,
+            backendUrl: fullUrl,
+            endpoint: LOGIN_ENDPOINT,
+            responseStatus: response.status,
+            jsonError: jsonError instanceof Error ? jsonError.message : String(jsonError),
+          },
+          { status: 502 },
+        )
+      }
 
       return NextResponse.json(data)
     } catch (fetchError) {
       clearTimeout(timeoutId)
 
       if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        console.error("10. Request timeout - backend server not responding")
+        console.error("14. Request timeout - backend server not responding")
         return NextResponse.json(
           {
             error: "Backend server timeout - server may be down",
-            details: `The backend server at ${fullUrl} is not responding`,
+            details: `The backend server at ${fullUrl} is not responding within 10 seconds`,
             backendUrl: fullUrl,
             endpoint: LOGIN_ENDPOINT,
           },
@@ -86,7 +98,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      console.error("11. Fetch error details:", {
+      console.error("15. Fetch error details:", {
         name: fetchError instanceof Error ? fetchError.name : "Unknown",
         message: fetchError instanceof Error ? fetchError.message : String(fetchError),
         cause: fetchError instanceof Error ? fetchError.cause : undefined,
@@ -107,7 +119,15 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      throw fetchError
+      return NextResponse.json(
+        {
+          error: "Network error",
+          details: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          backendUrl: fullUrl,
+          endpoint: LOGIN_ENDPOINT,
+        },
+        { status: 500 },
+      )
     }
   } catch (error) {
     console.error("=== PROXY ERROR ===")
@@ -129,7 +149,6 @@ export async function POST(request: NextRequest) {
 
 // Add a GET method for health check
 export async function GET() {
-  const healthUrl = `${BACKEND_URL}/health`
   const loginUrl = `${BACKEND_URL}${LOGIN_ENDPOINT}`
 
   console.log("=== HEALTH CHECK ===")
@@ -138,12 +157,16 @@ export async function GET() {
   console.log("Full login URL:", loginUrl)
 
   try {
-    const response = await fetch(healthUrl, {
+    // Try to make a simple GET request to the backend base URL
+    const response = await fetch(BACKEND_URL, {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
     })
+
+    const responseText = await response.text()
+    console.log("Health check response:", responseText.substring(0, 200))
 
     return NextResponse.json({
       status: "Proxy is working",
@@ -152,6 +175,7 @@ export async function GET() {
       fullLoginUrl: loginUrl,
       backendReachable: response.ok,
       backendStatus: response.status,
+      backendResponse: responseText.substring(0, 200),
     })
   } catch (error) {
     return NextResponse.json({

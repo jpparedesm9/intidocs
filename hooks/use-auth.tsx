@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
+import { apiClient } from "@/lib/api"
 
 interface User {
   userId: number
@@ -31,6 +32,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (authData: AuthData) => void
   logout: () => void
+  verifyToken: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -43,41 +45,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing auth data on mount
-    const authData = localStorage.getItem("auth")
-    if (authData) {
-      try {
-        const parsed = JSON.parse(authData)
-        if (parsed.token && parsed.user) {
-          // Check if token is expired
-          const expiresAt = new Date(parsed.expiresAt)
-          if (expiresAt > new Date()) {
-            setUser(parsed.user)
-            setToken(parsed.token)
-          } else {
-            // Token expired, clear storage
-            localStorage.removeItem("auth")
+    if (typeof window !== "undefined") {
+      const authData = localStorage.getItem("auth")
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData)
+          if (parsed.token && parsed.user) {
+            // Check if token is expired
+            const expiresAt = new Date(parsed.expiresAt)
+            if (expiresAt > new Date()) {
+              setUser(parsed.user)
+              setToken(parsed.token)
+              console.log("🔐 Auth restored from localStorage:", {
+                username: parsed.user.username,
+                expiresAt: parsed.expiresAt,
+                token: parsed.token.substring(0, 20) + "...",
+              })
+            } else {
+              // Token expired, clear storage
+              console.log("⏰ Token expired, clearing auth data")
+              localStorage.removeItem("auth")
+            }
           }
+        } catch (error) {
+          console.error("❌ Error parsing auth data:", error)
+          localStorage.removeItem("auth")
         }
-      } catch (error) {
-        console.error("Error parsing auth data:", error)
-        localStorage.removeItem("auth")
       }
     }
     setIsLoading(false)
   }, [])
 
   const login = (authData: AuthData) => {
+    console.log("✅ Login successful, storing auth data:", {
+      username: authData.user.username,
+      expiresAt: authData.expiresAt,
+      token: authData.token.substring(0, 20) + "...",
+    })
+
     setUser(authData.user)
     setToken(authData.token)
-    localStorage.setItem("auth", JSON.stringify(authData))
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth", JSON.stringify(authData))
+    }
+
     router.push("/")
   }
 
   const logout = () => {
+    console.log("🚪 Logging out user")
     setUser(null)
     setToken(null)
-    localStorage.removeItem("auth")
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth")
+    }
+
     router.push("/login")
+  }
+
+  const verifyToken = async (): Promise<boolean> => {
+    if (!token) return false
+    return await apiClient.verifyToken()
   }
 
   const value = {
@@ -87,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     login,
     logout,
+    verifyToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

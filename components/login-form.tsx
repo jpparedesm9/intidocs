@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Eye, EyeOff, FileText, AlertCircle, RefreshCw } from "lucide-react"
+import { Loader2, Eye, EyeOff, FileText, AlertCircle, RefreshCw, Copy } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+
+const BACKEND_LOGIN_URL = "http://127.0.0.1:8082/api/intdocs/auth/login"
 
 export function LoginForm() {
   const [username, setUsername] = useState("globalgad")
@@ -18,28 +20,64 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null)
   const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [lastError, setLastError] = useState<any>(null)
   const { toast } = useToast()
   const { login } = useAuth()
 
   const testConnection = async () => {
     try {
-      console.log("Testing connection to Next.js API proxy...")
-      const response = await fetch("/api/auth/login", {
+      console.log("Testing direct connection to backend:", BACKEND_LOGIN_URL)
+
+      // Test with a simple GET request to see if the server is reachable
+      const testUrl = "http://127.0.0.1:8082"
+      const response = await fetch(testUrl, {
         method: "GET",
+        mode: "cors",
+        headers: {
+          Accept: "application/json",
+        },
       })
-      const data = await response.json()
 
-      console.log("Connection test response:", data)
-      setDebugInfo(data)
+      const responseText = await response.text()
+      console.log("Connection test response:", {
+        status: response.status,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: responseText.substring(0, 200),
+      })
 
-      if (data.backendReachable) {
+      setDebugInfo({
+        backendUrl: BACKEND_LOGIN_URL,
+        testUrl: testUrl,
+        backendReachable: response.ok,
+        backendStatus: response.status,
+        backendResponse: responseText.substring(0, 200),
+      })
+
+      if (response.ok) {
         setConnectionStatus("✅ Backend conectado")
       } else {
         setConnectionStatus("❌ Backend no disponible")
       }
     } catch (error) {
-      setConnectionStatus("❌ Error de conexión")
       console.error("Connection test failed:", error)
+      setConnectionStatus("❌ Error de conexión")
+      setDebugInfo({
+        backendUrl: BACKEND_LOGIN_URL,
+        backendReachable: false,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  const copyErrorToClipboard = () => {
+    if (lastError) {
+      navigator.clipboard.writeText(JSON.stringify(lastError, null, 2))
+      toast({
+        title: "Error copiado",
+        description: "Los detalles del error han sido copiados al portapapeles.",
+        variant: "success",
+      })
     }
   }
 
@@ -57,57 +95,100 @@ export function LoginForm() {
 
     setIsLoading(true)
     setConnectionStatus(null)
+    setLastError(null)
 
     try {
-      console.log("=== FRONTEND LOGIN DEBUG ===")
-      console.log("1. Sending login request to Next.js API proxy: /api/auth/login")
-      console.log("2. Expected backend endpoint: http://127.0.0.1:8082/api/intdocs/auth/login")
+      console.log("=== DIRECT LOGIN DEBUG ===")
+      console.log("1. Making direct call to backend:", BACKEND_LOGIN_URL)
+      console.log("2. Request body:", { username: username.trim(), password: "***" })
 
-      const response = await fetch("/api/auth/login", {
+      const requestBody = {
+        username: username.trim(),
+        password: password.trim(),
+      }
+
+      const response = await fetch(BACKEND_LOGIN_URL, {
         method: "POST",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       console.log("3. Response status:", response.status)
       console.log("4. Response ok:", response.ok)
+      console.log("5. Response headers:", Object.fromEntries(response.headers.entries()))
 
-      const result = await response.json()
-      console.log("5. Response data:", {
-        success: result.success,
-        hasToken: !!result.data?.token,
-        error: result.error,
-        details: result.details,
-        endpoint: result.endpoint,
-        backendUrl: result.backendUrl,
-      })
+      // Get the response text first to handle non-JSON responses
+      const responseText = await response.text()
+      console.log("6. Raw response text:", responseText.substring(0, 500))
 
       if (!response.ok) {
-        // Handle specific error cases
-        if (response.status === 503) {
+        const errorDetails = {
+          status: response.status,
+          statusText: response.statusText,
+          url: BACKEND_LOGIN_URL,
+          responseText: responseText,
+          headers: Object.fromEntries(response.headers.entries()),
+        }
+
+        setLastError(errorDetails)
+
+        // Handle specific HTTP status codes
+        if (response.status === 404) {
           toast({
-            title: "Servidor no disponible",
-            description: "El servidor backend no está ejecutándose en el puerto 8082.",
+            title: "Endpoint no encontrado",
+            description: "El endpoint de login no existe en el servidor backend.",
             variant: "destructive",
           })
-        } else if (response.status === 504) {
+        } else if (response.status === 405) {
           toast({
-            title: "Tiempo de espera agotado",
-            description: "El servidor está tardando demasiado en responder.",
+            title: "Método no permitido",
+            description: "El servidor no acepta requests POST en este endpoint.",
+            variant: "destructive",
+          })
+        } else if (response.status === 500) {
+          toast({
+            title: "Error interno del servidor",
+            description: "El servidor backend tiene un error interno.",
             variant: "destructive",
           })
         } else {
           toast({
-            title: "Error de conexión",
-            description: result.details || result.error || "Error desconocido",
+            title: `Error ${response.status}`,
+            description: responseText || response.statusText,
             variant: "destructive",
           })
         }
+        return
+      }
+
+      // Try to parse as JSON
+      let result
+      try {
+        result = JSON.parse(responseText)
+        console.log("7. Successfully parsed JSON response:", {
+          success: result.success,
+          hasToken: !!result.data?.token,
+          message: result.message,
+        })
+      } catch (jsonError) {
+        console.error("8. Failed to parse JSON response:", jsonError)
+        console.error("9. Response was:", responseText)
+
+        setLastError({
+          error: "Invalid JSON response",
+          responseText: responseText,
+          jsonError: jsonError instanceof Error ? jsonError.message : String(jsonError),
+        })
+
+        toast({
+          title: "Respuesta inválida del servidor",
+          description: "El servidor devolvió una respuesta que no es JSON válido.",
+          variant: "destructive",
+        })
         return
       }
 
@@ -131,6 +212,7 @@ export function LoginForm() {
           },
         }
 
+        console.log("10. Login successful, storing auth data")
         login(authData)
 
         toast({
@@ -139,6 +221,8 @@ export function LoginForm() {
           variant: "success",
         })
       } else {
+        console.log("11. Login failed:", result)
+        setLastError(result)
         toast({
           title: "Error de autenticación",
           description: result.message || "Credenciales incorrectas",
@@ -146,12 +230,37 @@ export function LoginForm() {
         })
       }
     } catch (error) {
-      console.error("=== FRONTEND ERROR ===", error)
-      toast({
-        title: "Error de red",
-        description: "No se pudo conectar con el servidor. Verifica tu conexión.",
-        variant: "destructive",
-      })
+      console.error("=== DIRECT LOGIN ERROR ===", error)
+
+      const errorDetails = {
+        type: error instanceof Error ? error.constructor.name : typeof error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        url: BACKEND_LOGIN_URL,
+      }
+
+      setLastError(errorDetails)
+
+      // Handle specific error types
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        toast({
+          title: "Error de conexión",
+          description: "No se pudo conectar al servidor backend. Verifica que esté ejecutándose en el puerto 8082.",
+          variant: "destructive",
+        })
+      } else if (error instanceof Error && error.message.includes("CORS")) {
+        toast({
+          title: "Error de CORS",
+          description: "El servidor backend no permite conexiones desde este dominio.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Error de red",
+          description: error instanceof Error ? error.message : "Error desconocido de conexión.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -232,16 +341,29 @@ export function LoginForm() {
             </Button>
           </form>
 
+          {/* Error Details */}
+          {lastError && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-red-800">Detalles del Error</span>
+                <Button type="button" variant="ghost" size="sm" onClick={copyErrorToClipboard}>
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="text-xs text-red-700 max-h-32 overflow-y-auto">
+                <pre>{JSON.stringify(lastError, null, 2)}</pre>
+              </div>
+            </div>
+          )}
+
           {/* Debug Information */}
           <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
             <div className="flex items-center mb-2">
               <AlertCircle className="h-3 w-3 mr-1" />
               <span className="font-semibold">Información de Debug</span>
             </div>
-            <p>• Frontend API: /api/auth/login</p>
-            <p>• Backend URL: http://127.0.0.1:8082</p>
-            <p>• Backend Endpoint: /api/intdocs/auth/login</p>
-            <p>• Full URL: http://127.0.0.1:8082/api/intdocs/auth/login</p>
+            <p>• Conexión: DIRECTA (sin proxy)</p>
+            <p>• Backend URL: {BACKEND_LOGIN_URL}</p>
             <p>• Usuario: {username}</p>
             <p>• Contraseña: {"*".repeat(password.length)}</p>
 
@@ -249,14 +371,15 @@ export function LoginForm() {
               <div className="mt-2 p-2 bg-white rounded border">
                 <p className="font-semibold">Estado de Conexión:</p>
                 <p>• Backend URL: {debugInfo.backendUrl}</p>
-                <p>• Login Endpoint: {debugInfo.loginEndpoint}</p>
-                <p>• Full Login URL: {debugInfo.fullLoginUrl}</p>
                 <p>• Backend Reachable: {debugInfo.backendReachable ? "✅" : "❌"}</p>
+                <p>• Backend Status: {debugInfo.backendStatus}</p>
+                {debugInfo.backendResponse && <p>• Backend Response: {debugInfo.backendResponse}</p>}
+                {debugInfo.error && <p>• Error: {debugInfo.error}</p>}
               </div>
             )}
 
             <p className="mt-2 text-orange-600">
-              ⚠️ Asegúrate de que el servidor backend esté ejecutándose en el puerto 8082
+              ⚠️ Conexión directa al backend - Asegúrate de que el servidor tenga CORS habilitado
             </p>
           </div>
         </CardContent>
