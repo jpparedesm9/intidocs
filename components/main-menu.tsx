@@ -42,10 +42,9 @@ interface MainMenuProps {
   editor: Editor | null
   documentTitle: string
   onSave: () => void
-  onNew: () => void
 }
 
-export default function MainMenu({ editor, documentTitle, onSave, onNew }: MainMenuProps) {
+export default function MainMenu({ editor, documentTitle, onSave }: MainMenuProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
@@ -263,10 +262,7 @@ export default function MainMenu({ editor, documentTitle, onSave, onNew }: MainM
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuItem onClick={onNew}>
-              <FileIcon className="mr-2 h-4 w-4" />
-              <span>New</span>
-            </DropdownMenuItem>
+            {/* New document option removed */}
             <DropdownMenuItem>
               <label className="flex items-center cursor-pointer w-full">
                 <FileInput className="mr-2 h-4 w-4" />

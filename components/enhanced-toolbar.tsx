@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useCallback, memo } from "react"
 import type { Editor } from "@tiptap/react"
 import {
   Bold,
@@ -48,30 +48,29 @@ interface EnhancedToolbarProps {
   editor: Editor
 }
 
-export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
+const EnhancedToolbar = memo(function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
   const [fontSize, setFontSize] = useState(11)
   const [fontFamily, setFontFamily] = useState("Arial")
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
   const [isHighlightPickerOpen, setIsHighlightPickerOpen] = useState(false)
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
 
-  if (!editor) {
-    return null
-  }
-
-  const safeIsActive = (name: string, attrs?: Record<string, any>) => {
-    try {
-      if (editor && editor.isActive) {
-        return attrs ? editor.isActive(name, attrs) : editor.isActive(name)
+  const safeIsActive = useCallback(
+    (name: string, attrs?: Record<string, any>) => {
+      try {
+        if (editor && editor.isActive) {
+          return attrs ? editor.isActive(name, attrs) : editor.isActive(name)
+        }
+        return false
+      } catch (error) {
+        console.error(`Error checking if ${name} is active:`, error)
+        return false
       }
-      return false
-    } catch (error) {
-      console.error(`Error checking if ${name} is active:`, error)
-      return false
-    }
-  }
+    },
+    [editor],
+  )
 
-  const safeCommand = (callback: () => void) => {
+  const safeCommand = useCallback((callback: () => void) => {
     return () => {
       try {
         callback()
@@ -79,9 +78,9 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
         console.error("Error executing command:", error)
       }
     }
-  }
+  }, [])
 
-  const addImage = () => {
+  const addImage = useCallback(() => {
     try {
       const url = window.prompt("Enter the URL of the image:")
       if (url) {
@@ -90,9 +89,9 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
     } catch (error) {
       console.error("Error adding image:", error)
     }
-  }
+  }, [editor])
 
-  const addLink = () => {
+  const addLink = useCallback(() => {
     try {
       const url = window.prompt("Enter the URL:")
       if (url) {
@@ -101,17 +100,17 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
     } catch (error) {
       console.error("Error adding link:", error)
     }
-  }
+  }, [editor])
 
-  const removeLink = () => {
+  const removeLink = useCallback(() => {
     try {
       editor.chain().focus().unsetLink().run()
     } catch (error) {
       console.error("Error removing link:", error)
     }
-  }
+  }, [editor])
 
-  const insertPageBreak = () => {
+  const insertPageBreak = useCallback(() => {
     try {
       if (editor.chain) {
         editor.chain().focus().insertPageBreak().run()
@@ -119,114 +118,129 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
     } catch (error) {
       console.error("Error inserting page break:", error)
     }
-  }
+  }, [editor])
 
-  const insertHorizontalRule = () => {
+  const insertHorizontalRule = useCallback(() => {
     try {
       editor.chain().focus().insertContent("<hr/>").run()
     } catch (error) {
       console.error("Error inserting horizontal rule:", error)
     }
-  }
+  }, [editor])
 
-  const handleFontSizeChange = (value: number) => {
-    try {
-      setFontSize(value)
-      // Only apply if the extension is available
-      if (editor.can().setFontSize) {
-        editor.chain().focus().setFontSize(`${value}px`).run()
+  const handleFontSizeChange = useCallback(
+    (value: number) => {
+      try {
+        setFontSize(value)
+        // Only apply if the extension is available
+        if (editor.can().setFontSize) {
+          editor.chain().focus().setFontSize(`${value}px`).run()
+        }
+      } catch (error) {
+        console.error("Error changing font size:", error)
       }
-    } catch (error) {
-      console.error("Error changing font size:", error)
-    }
-  }
+    },
+    [editor],
+  )
 
-  const handleFontFamilyChange = (font: string) => {
-    try {
-      setFontFamily(font)
-      // Only apply if the extension is available
-      if (editor.can().setFontFamily) {
-        editor.chain().focus().setFontFamily(font).run()
+  const handleFontFamilyChange = useCallback(
+    (font: string) => {
+      try {
+        setFontFamily(font)
+        // Only apply if the extension is available
+        if (editor.can().setFontFamily) {
+          editor.chain().focus().setFontFamily(font).run()
+        }
+      } catch (error) {
+        console.error("Error changing font family:", error)
       }
-    } catch (error) {
-      console.error("Error changing font family:", error)
-    }
-  }
+    },
+    [editor],
+  )
 
-  const setTextColor = (color: string) => {
-    try {
-      // Only apply if the extension is available
-      if (editor.can().setColor) {
-        editor.chain().focus().setColor(color).run()
+  const setTextColor = useCallback(
+    (color: string) => {
+      try {
+        // Only apply if the extension is available
+        if (editor.can().setColor) {
+          editor.chain().focus().setColor(color).run()
+        }
+        setIsColorPickerOpen(false)
+      } catch (error) {
+        console.error("Error setting text color:", error)
       }
-      setIsColorPickerOpen(false)
-    } catch (error) {
-      console.error("Error setting text color:", error)
-    }
-  }
+    },
+    [editor, setIsColorPickerOpen],
+  )
 
-  const setHighlightColor = (color: string) => {
-    try {
-      // Only apply if the extension is available
-      if (editor.can().setHighlight) {
-        editor.chain().focus().setHighlight({ color }).run()
+  const setHighlightColor = useCallback(
+    (color: string) => {
+      try {
+        // Only apply if the extension is available
+        if (editor.can().setHighlight) {
+          editor.chain().focus().setHighlight({ color }).run()
+        }
+        setIsHighlightPickerOpen(false)
+      } catch (error) {
+        console.error("Error setting highlight color:", error)
       }
-      setIsHighlightPickerOpen(false)
-    } catch (error) {
-      console.error("Error setting highlight color:", error)
-    }
+    },
+    [editor, setIsHighlightPickerOpen],
+  )
+
+  // Memoize static arrays to prevent recreation on re-renders
+  const colors = useMemo(
+    () => [
+      "#000000",
+      "#434343",
+      "#666666",
+      "#999999",
+      "#b7b7b7",
+      "#cccccc",
+      "#d9d9d9",
+      "#efefef",
+      "#f3f3f3",
+      "#ffffff",
+      "#980000",
+      "#ff0000",
+      "#ff9900",
+      "#ffff00",
+      "#00ff00",
+      "#00ffff",
+      "#4a86e8",
+      "#0000ff",
+      "#9900ff",
+      "#ff00ff",
+    ],
+    [],
+  )
+
+  const fontFamilies = useMemo(() => ["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"], [])
+
+  // Memoize button click handlers
+  const undoHandler = useCallback(
+    safeCommand(() => editor?.chain().focus().undo().run()),
+    [editor, safeCommand],
+  )
+  const redoHandler = useCallback(
+    safeCommand(() => editor?.chain().focus().redo().run()),
+    [editor, safeCommand],
+  )
+  const printHandler = useCallback(() => window.print(), [])
+
+  if (!editor) {
+    return null
   }
-
-  const colors = [
-    "#000000",
-    "#434343",
-    "#666666",
-    "#999999",
-    "#b7b7b7",
-    "#cccccc",
-    "#d9d9d9",
-    "#efefef",
-    "#f3f3f3",
-    "#ffffff",
-    "#980000",
-    "#ff0000",
-    "#ff9900",
-    "#ffff00",
-    "#00ff00",
-    "#00ffff",
-    "#4a86e8",
-    "#0000ff",
-    "#9900ff",
-    "#ff00ff",
-  ]
-
-  const fontFamilies = ["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"]
 
   return (
     <>
       <div className="border-b border-gray-200 bg-white p-1 flex flex-wrap items-center gap-1">
         {/* Undo/Redo */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={safeCommand(() => editor.chain().focus().undo().run())}
-          title="Undo"
-          className="h-8 w-8 p-0"
-        >
+        <Button variant="ghost" size="sm" onClick={undoHandler} title="Undo" className="h-8 w-8 p-0">
           <Undo className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={safeCommand(() => editor.chain().focus().redo().run())}
-          title="Redo"
-          className="h-8 w-8 p-0"
-        >
+        <Button variant="ghost" size="sm" onClick={redoHandler} title="Redo" className="h-8 w-8 p-0">
           <Redo className="h-4 w-4" />
-        </Button>
-
-        <Button variant="ghost" size="sm" onClick={() => window.print()} title="Print" className="h-8 w-8 p-0">
-          <Printer className="h-4 w-4" />
         </Button>
 
         <Separator orientation="vertical" className="mx-1 h-6" />
@@ -447,14 +461,18 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
 
         <Separator orientation="vertical" className="mx-1 h-6" />
 
-        {/* Insert */}
-        <Button variant="ghost" size="sm" onClick={addImage} title="Insert Image" className="h-8 w-8 p-0">
-          <ImageIcon className="h-4 w-4" />
-        </Button>
-
         {/* Table Menu */}
         <TableMenu editor={editor} />
-
+        {/* Horizontal Rule */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={insertHorizontalRule}
+          title="Insert Horizontal Rule"
+          className="h-8 w-8 p-0"
+        >
+          <Minus className="h-4 w-4" />
+        </Button>
         {/* Template Button */}
         <Button
           variant="ghost"
@@ -467,50 +485,26 @@ export default function EnhancedToolbar({ editor }: EnhancedToolbarProps) {
           <span className="text-xs">Templates</span>
         </Button>
 
-        {/* Horizontal Rule */}
         <Button
           variant="ghost"
           size="sm"
-          onClick={insertHorizontalRule}
-          title="Insert Horizontal Rule"
-          className="h-8 w-8 p-0"
+          onClick={() => setIsTemplateManagerOpen(true)}
+          title="Insert Template"
+          className="h-8 px-2 flex items-center gap-1"
         >
-          <Minus className="h-4 w-4" />
+          <FileTemplate className="h-4 w-4" />
+          <span className="text-xs">Vista Previa</span>
         </Button>
 
-        {/* Link */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={addLink}
-          title="Insert Link"
-          className={cn("h-8 w-8 p-0", safeIsActive("link") ? "bg-gray-200" : "")}
-        >
-          <Link className="h-4 w-4" />
-        </Button>
-
-        {/* Unlink */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={removeLink}
-          title="Remove Link"
-          className="h-8 w-8 p-0"
-          disabled={!safeIsActive("link")}
-        >
-          <Unlink className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        {/* Page Break */}
-        <Button variant="ghost" size="sm" onClick={insertPageBreak} title="Insert Page Break" className="h-8 w-8 p-0">
-          <FileBreak className="h-4 w-4" />
-        </Button>
+        
       </div>
 
       {/* Template Manager Dialog */}
       <TemplateManager editor={editor} isOpen={isTemplateManagerOpen} onClose={() => setIsTemplateManagerOpen(false)} />
     </>
   )
-}
+})
+
+EnhancedToolbar.displayName = "EnhancedToolbar"
+
+export default EnhancedToolbar

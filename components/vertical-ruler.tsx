@@ -1,19 +1,25 @@
 "use client"
 
+import { useMemo, memo } from "react"
 import type React from "react"
 
 interface VerticalRulerProps {
   scrollTop: number
 }
 
-const VerticalRuler: React.FC<VerticalRulerProps> = ({ scrollTop = 0 }) => {
-  // Create an array of numbers for the ruler markings (0-20)
-  const markings = Array.from({ length: 21 }, (_, i) => i)
+const VerticalRuler: React.FC<VerticalRulerProps> = memo(({ scrollTop = 0 }) => {
+  // Create an array of numbers for the ruler markings (0-20) - memoize to avoid recreation
+  const markings = useMemo(() => Array.from({ length: 21 }, (_, i) => i), [])
+
+  // Calculate transform style outside of render
+  const transformStyle = useMemo(() => ({
+    transform: `translateY(${-(scrollTop % 48)}px)`
+  }), [scrollTop])
 
   return (
     <div className="vertical-ruler w-[40px] bg-[#f1f3f4] border-r border-[#e0e0e0] flex-shrink-0">
       <div className="relative h-full">
-        <div className="absolute top-0 left-0 h-full" style={{ transform: `translateY(${-(scrollTop % 48)}px)` }}>
+        <div className="absolute top-0 left-0 h-full" style={transformStyle}>
           {markings.map((num) => (
             <div key={num} className="flex items-center h-[48px]">
               {/* Number label */}
@@ -27,6 +33,8 @@ const VerticalRuler: React.FC<VerticalRulerProps> = ({ scrollTop = 0 }) => {
       </div>
     </div>
   )
-}
+})
+
+VerticalRuler.displayName = "VerticalRuler"
 
 export default VerticalRuler

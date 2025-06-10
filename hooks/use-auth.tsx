@@ -1,8 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api"
+import { useRouter, usePathname } from "next/navigation"
 
 interface User {
   userId: number
@@ -32,23 +31,23 @@ interface AuthContextType {
   isLoading: boolean
   login: (authData: AuthData) => void
   logout: () => void
-  verifyToken: () => Promise<boolean>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     // Check for existing auth data on mount
     if (typeof window !== "undefined") {
-      const authData = localStorage.getItem("auth")
-      if (authData) {
-        try {
+      try {
+        const authData = localStorage.getItem("auth")
+        if (authData) {
           const parsed = JSON.parse(authData)
           if (parsed.token && parsed.user) {
             // Check if token is expired
@@ -67,8 +66,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.removeItem("auth")
             }
           }
-        } catch (error) {
-          console.error("❌ Error parsing auth data:", error)
+        }
+      } catch (error) {
+        console.error("❌ Error parsing auth data:", error)
+        if (typeof window !== "undefined") {
           localStorage.removeItem("auth")
         }
       }
@@ -105,27 +106,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login")
   }
 
-  const verifyToken = async (): Promise<boolean> => {
-    if (!token) return false
-    return await apiClient.verifyToken()
-  }
-
-  const value = {
+  const value: AuthContextType = {
     user,
     token,
     isAuthenticated: !!user && !!token,
     isLoading,
     login,
     logout,
-    verifyToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context

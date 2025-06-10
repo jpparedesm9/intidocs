@@ -1,8 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
-
-import { useState } from "react"
+import { useEffect, useState, memo, useMemo, useCallback } from "react"
 import type { Editor } from "@tiptap/react"
 import {
   Dialog,
@@ -33,7 +31,7 @@ export interface Template {
   html: string
 }
 
-export default function TemplateManager({ editor, isOpen, onClose, getTemplates }: TemplateManagerProps) {
+const TemplateManager = memo(function TemplateManager({ editor, isOpen, onClose, getTemplates }: TemplateManagerProps) {
   const [templates, setTemplates] = useState<Template[]>([
     {
       id: "invoice-basic",
@@ -435,13 +433,15 @@ export default function TemplateManager({ editor, isOpen, onClose, getTemplates 
     }
   }, [isOpen, getTemplates])
 
-  // Get unique categories
-  const categories = Array.from(new Set(templates.map((t) => t.category)))
+  // Get unique categories - memoize to prevent recalculation on each render
+  const categories = useMemo(() => Array.from(new Set(templates.map((t) => t.category))), [templates])
 
-  // Filter templates by category
-  const filteredTemplates = selectedCategory ? templates.filter((t) => t.category === selectedCategory) : templates
+  // Filter templates by category - memoize to prevent filtering on every render
+  const filteredTemplates = useMemo(() => 
+    selectedCategory ? templates.filter((t) => t.category === selectedCategory) : templates
+  , [selectedCategory, templates])
 
-  const insertTemplate = (template: Template) => {
+  const insertTemplate = useCallback((template: Template) => {
     if (editor) {
       try {
         editor.commands.insertContent(template.html)
@@ -450,9 +450,9 @@ export default function TemplateManager({ editor, isOpen, onClose, getTemplates 
         console.error("Error inserting template:", error)
       }
     }
-  }
+  }, [editor, onClose])
 
-  const getIcon = (iconName: string) => {
+  const getIcon = useCallback((iconName: string) => {
     switch (iconName) {
       case "receipt":
         return <Receipt className="h-6 w-6" />
@@ -465,7 +465,7 @@ export default function TemplateManager({ editor, isOpen, onClose, getTemplates 
       default:
         return <FileText className="h-6 w-6" />
     }
-  }
+  }, [])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -534,4 +534,8 @@ export default function TemplateManager({ editor, isOpen, onClose, getTemplates 
       </DialogContent>
     </Dialog>
   )
-}
+})
+
+TemplateManager.displayName = "TemplateManager"
+
+export default TemplateManager

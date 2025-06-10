@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react"
 import type { Editor } from "@tiptap/react"
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -12,7 +12,7 @@ interface TableMenuProps {
   editor: Editor
 }
 
-export default function TableMenu({ editor }: TableMenuProps) {
+const TableMenu = memo(function TableMenu({ editor }: TableMenuProps) {
   const [hoveredCell, setHoveredCell] = useState<{ row: number; col: number } | null>(null)
   const [isTableMenuOpen, setIsTableMenuOpen] = useState(false)
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
@@ -21,10 +21,12 @@ export default function TableMenu({ editor }: TableMenuProps) {
   const maxRows = 8
   const maxCols = 10
 
-  // Safely check if table is selected
-  const isTableSelected = editor && editor.isActive ? editor.isActive("table") : false
+  // Safely check if table is selected - memoize this to prevent unnecessary calculations
+  const isTableSelected = useMemo(() => {
+    return editor && editor.isActive ? editor.isActive("table") : false
+  }, [editor])
 
-  const handleCreateTable = (rows: number, cols: number) => {
+  const handleCreateTable = useCallback((rows: number, cols: number) => {
     try {
       if (editor && editor.chain) {
         editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
@@ -33,7 +35,7 @@ export default function TableMenu({ editor }: TableMenuProps) {
     } catch (error) {
       console.error("Error creating table:", error)
     }
-  }
+  }, [editor, setIsTableMenuOpen])
 
   const handleAddRowBefore = () => {
     try {
@@ -170,7 +172,7 @@ export default function TableMenu({ editor }: TableMenuProps) {
     }
   }, [])
 
-  const colors = [
+  const colors = useMemo(() => [
     "#ffffff",
     "#f5f5f5",
     "#e0e0e0",
@@ -191,10 +193,31 @@ export default function TableMenu({ editor }: TableMenuProps) {
     "#ffe0b2",
     "#ffccbc",
     "#d7ccc8",
-  ]
+  ], [])
 
   // If editor is not available, don't render anything
   if (!editor) return null
+  
+  // Memoize the table grid for better performance
+  const tableGrid = useMemo(() => {
+    return Array.from({ length: maxRows * maxCols }).map((_, index) => {
+      const row = Math.floor(index / maxCols)
+      const col = index % maxCols
+      const isHighlighted = hoveredCell !== null && row <= hoveredCell.row && col <= hoveredCell.col
+
+      return (
+        <div
+          key={index}
+          className={cn(
+            "w-6 h-6 border border-gray-200 rounded-sm transition-colors",
+            isHighlighted ? "bg-blue-100" : "bg-gray-50",
+          )}
+          onMouseEnter={() => setHoveredCell({ row, col })}
+          onClick={() => handleCreateTable(row + 1, col + 1)}
+        />
+      )
+    })
+  }, [hoveredCell, maxCols, handleCreateTable, maxRows])
 
   return (
     <>
@@ -209,23 +232,7 @@ export default function TableMenu({ editor }: TableMenuProps) {
             <div className="p-2">
               <div className="text-sm font-medium mb-2 px-2 pt-2">Insert Table</div>
               <div className="grid grid-cols-10 gap-1 p-2 bg-white rounded-md">
-                {Array.from({ length: maxRows * maxCols }).map((_, index) => {
-                  const row = Math.floor(index / maxCols)
-                  const col = index % maxCols
-                  const isHighlighted = hoveredCell !== null && row <= hoveredCell.row && col <= hoveredCell.col
-
-                  return (
-                    <div
-                      key={index}
-                      className={cn(
-                        "w-6 h-6 border border-gray-200 rounded-sm transition-colors",
-                        isHighlighted ? "bg-blue-100" : "bg-gray-50",
-                      )}
-                      onMouseEnter={() => setHoveredCell({ row, col })}
-                      onClick={() => handleCreateTable(row + 1, col + 1)}
-                    />
-                  )
-                })}
+                {tableGrid}
               </div>
               {hoveredCell && (
                 <div className="text-center text-sm py-2">
@@ -326,4 +333,8 @@ export default function TableMenu({ editor }: TableMenuProps) {
       </Popover>
     </>
   )
-}
+})
+
+TableMenu.displayName = "TableMenu"
+
+export default TableMenu
