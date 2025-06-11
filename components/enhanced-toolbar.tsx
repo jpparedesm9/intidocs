@@ -1,5 +1,7 @@
 "use client"
 
+import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
 import { useState, useMemo, useCallback, memo } from "react"
 import type { Editor } from "@tiptap/react"
 import {
@@ -24,6 +26,8 @@ import {
   Minus,
   FileIcon as FileTemplate,
   Paperclip,
+  Eye,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -31,7 +35,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -56,6 +59,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
   const [isHighlightPickerOpen, setIsHighlightPickerOpen] = useState(false)
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
 
   const safeIsActive = useCallback(
     (name: string, attrs?: Record<string, any>) => {
@@ -505,17 +509,45 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsTemplateManagerOpen(true)}
-          title="Insert Template"
+          onClick={() => setIsPreviewModalOpen(true)}
+          title="Vista Previa"
           className="h-8 px-2 flex items-center gap-1"
         >
-          <FileTemplate className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
           <span className="text-xs">Vista Previa</span>
         </Button>
       </div>
 
       {/* Template Manager Dialog */}
       <TemplateManager editor={editor} isOpen={isTemplateManagerOpen} onClose={() => setIsTemplateManagerOpen(false)} />
+
+      {/* Preview Modal */}
+      {isPreviewModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
+          <div className="bg-white rounded-lg w-[90vw] h-[90vh] flex flex-col">
+            {/* Header with close button */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-lg font-semibold">Vista Previa del Documento</h2>
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+                title="Cerrar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* PDF Content */}
+            <div className="flex-1 p-4">
+              <iframe
+                src="https://www.unfv.edu.pe/ceprevi/images/servicios/ciclos/ciclo_c/2018/Libros/Literatura.pdf"
+                className="w-full h-full border rounded"
+                title="Vista Previa PDF"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 })
