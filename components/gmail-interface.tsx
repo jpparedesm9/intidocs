@@ -445,7 +445,7 @@ export default function GmailInterface() {
                     </div>
                   </div>
 
-                  <div className="mt-4">
+                  {/*<div className="mt-4">
                     <div className="flex items-center px-4 py-1 text-sm font-medium text-gray-300">BANDEJAS</div>
                     <div className="mt-2 pl-4">
                       <div
@@ -522,7 +522,7 @@ export default function GmailInterface() {
                         <span>Eliminados</span>
                       </div>
                     </div>
-                  </div>
+                  </div>*/}
                 </div>
                 <Button
                   onClick={() => setMobileMenuOpen(false)}

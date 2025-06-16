@@ -28,6 +28,7 @@ import {
   Paperclip,
   Eye,
   X,
+  AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -60,6 +61,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
   const [isHighlightPickerOpen, setIsHighlightPickerOpen] = useState(false)
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [pdfLoadError, setPdfLoadError] = useState(false)
 
   const safeIsActive = useCallback(
     (name: string, attrs?: Record<string, any>) => {
@@ -193,6 +195,17 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
     },
     [editor, setIsHighlightPickerOpen],
   )
+
+  // Handle PDF load error
+  const handlePdfError = useCallback(() => {
+    setPdfLoadError(true)
+  }, [])
+
+  // Reset PDF error when modal opens
+  const openPreviewModal = useCallback(() => {
+    setPdfLoadError(false)
+    setIsPreviewModalOpen(true)
+  }, [])
 
   // Memoize static arrays to prevent recreation on re-renders
   const colors = useMemo(
@@ -509,7 +522,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsPreviewModalOpen(true)}
+          onClick={openPreviewModal}
           title="Vista Previa"
           className="h-8 px-2 flex items-center gap-1"
         >
@@ -539,11 +552,37 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
 
             {/* PDF Content */}
             <div className="flex-1 p-4">
-              <iframe
-                src="https://www.unfv.edu.pe/ceprevi/images/servicios/ciclos/ciclo_c/2018/Libros/Literatura.pdf"
-                className="w-full h-full border rounded"
-                title="Vista Previa PDF"
-              />
+              {pdfLoadError ? (
+                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                  <AlertCircle className="h-16 w-16 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No se pudo cargar el PDF</h3>
+                  <p className="text-sm text-center mb-4">
+                    El documento de vista previa no está disponible en este momento.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setPdfLoadError(false)
+                      // Force iframe reload
+                      const iframe = document.querySelector("#preview-iframe") as HTMLIFrameElement
+                      if (iframe) {
+                        iframe.src = iframe.src
+                      }
+                    }}
+                  >
+                    Intentar de nuevo
+                  </Button>
+                </div>
+              ) : (
+                <iframe
+                  id="preview-iframe"
+                  src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
+                  className="w-full h-full border rounded"
+                  title="Vista Previa PDF"
+                  onError={handlePdfError}
+                  onLoad={() => setPdfLoadError(false)}
+                />
+              )}
             </div>
           </div>
         </div>
