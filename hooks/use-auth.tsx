@@ -39,43 +39,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
+  // Handle client-side mounting
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     // Check for existing auth data on mount
-    if (typeof window !== "undefined") {
-      try {
-        const authData = localStorage.getItem("auth")
-        if (authData) {
-          const parsed = JSON.parse(authData)
-          if (parsed.token && parsed.user) {
-            // Check if token is expired
-            const expiresAt = new Date(parsed.expiresAt)
-            if (expiresAt > new Date()) {
-              setUser(parsed.user)
-              setToken(parsed.token)
-              console.log("🔐 Auth restored from localStorage:", {
-                username: parsed.user.username,
-                expiresAt: parsed.expiresAt,
-                token: parsed.token.substring(0, 20) + "...",
-              })
-            } else {
-              // Token expired, clear storage
-              console.log("⏰ Token expired, clearing auth data")
-              localStorage.removeItem("auth")
-            }
+    try {
+      const authData = localStorage.getItem("auth")
+      if (authData) {
+        const parsed = JSON.parse(authData)
+        if (parsed.token && parsed.user) {
+          // Check if token is expired
+          const expiresAt = new Date(parsed.expiresAt)
+          if (expiresAt > new Date()) {
+            setUser(parsed.user)
+            setToken(parsed.token)
+            console.log("🔐 Auth restored from localStorage:", {
+              username: parsed.user.username,
+              expiresAt: parsed.expiresAt,
+              token: parsed.token.substring(0, 20) + "...",
+            })
+          } else {
+            // Token expired, clear storage
+            console.log("⏰ Token expired, clearing auth data")
+            localStorage.removeItem("auth")
           }
         }
-      } catch (error) {
-        console.error("❌ Error parsing auth data:", error)
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("auth")
-        }
       }
+    } catch (error) {
+      console.error("❌ Error parsing auth data:", error)
+      localStorage.removeItem("auth")
     }
+
     setIsLoading(false)
-  }, [])
+  }, [mounted])
 
   const login = (authData: AuthData) => {
     console.log("✅ Login successful, storing auth data:", {
@@ -87,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authData.user)
     setToken(authData.token)
 
-    if (typeof window !== "undefined") {
+    if (mounted) {
       localStorage.setItem("auth", JSON.stringify(authData))
     }
 
@@ -99,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     setToken(null)
 
-    if (typeof window !== "undefined") {
+    if (mounted) {
       localStorage.removeItem("auth")
     }
 
@@ -113,6 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     login,
     logout,
+  }
+
+  // Don't render children until mounted to avoid hydration issues
+  if (!mounted) {
+    return null
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

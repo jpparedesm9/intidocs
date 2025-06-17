@@ -1,93 +1,48 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Search, X, User, Users, Building2, Send, UserCheck, Zap } from "lucide-react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { Search, X, User, Users, Building2, Send, UserCheck, Zap, Loader2 } from "lucide-react"
+import { apiClient } from "@/lib/api"
 
-// Datos mock para instituciones y usuarios
-const MOCK_INSTITUTIONS = [
-  { id: "1", name: "Ministerio de Educación" },
-  { id: "2", name: "Ministerio de Salud" },
-  { id: "3", name: "Municipio de Quito" },
-  { id: "4", name: "Municipio de Guayaquil" },
-  { id: "5", name: "Universidad Central" },
-  { id: "6", name: "Secretaría Nacional de Planificación" },
-]
-
-const MOCK_USERS = [
-  {
-    id: "101",
-    name: "Carlos Jiménez",
-    email: "cjimenez@educacion.gob.ec",
-    institution: "Ministerio de Educación",
-    institutionId: "1",
-    position: "Director General",
-  },
-  {
-    id: "102",
-    name: "María López",
-    email: "mlopez@educacion.gob.ec",
-    institution: "Ministerio de Educación",
-    institutionId: "1",
-    position: "Coordinadora Académica",
-  },
-  {
-    id: "103",
-    name: "Juan Pérez",
-    email: "jperez@salud.gob.ec",
-    institution: "Ministerio de Salud",
-    institutionId: "2",
-    position: "Director de Hospitales",
-  },
-  {
-    id: "104",
-    name: "Ana Rodríguez",
-    email: "arodriguez@salud.gob.ec",
-    institution: "Ministerio de Salud",
-    institutionId: "2",
-    position: "Coordinadora de Programas",
-  },
-  {
-    id: "105",
-    name: "Luis Morales",
-    email: "lmorales@quito.gob.ec",
-    institution: "Municipio de Quito",
-    institutionId: "3",
-    position: "Director de Planificación",
-  },
-  {
-    id: "106",
-    name: "Patricia Andrade",
-    email: "pandrade@guayaquil.gob.ec",
-    institution: "Municipio de Guayaquil",
-    institutionId: "4",
-    position: "Directora de Proyectos",
-  },
-  {
-    id: "107",
-    name: "Roberto Sánchez",
-    email: "rsanchez@uce.edu.ec",
-    institution: "Universidad Central",
-    institutionId: "5",
-    position: "Decano",
-  },
-  {
-    id: "108",
-    name: "Carmen Vega",
-    email: "cvega@planificacion.gob.ec",
-    institution: "Secretaría Nacional de Planificación",
-    institutionId: "6",
-    position: "Directora de Seguimiento",
-  },
-]
-
-// Usuario logueado hardcoded
+// Usuario logueado hardcoded (mantener como fallback)
 const CURRENT_USER = {
-  id: "current-user",
-  name: "GLOBALGAD GLOBALGAD",
+  userId: "current-user",
+  fullName: "GLOBALGAD GLOBALGAD",
   email: "administrador@municipiodemejia.gob.ec",
-  institution: "Municipio de Mejía",
-  institutionId: "7",
+  departmentName: "Municipio de Mejía",
   position: "Administrador del Sistema",
+}
+
+interface ApiUser {
+  userId: number
+  username: string
+  identification: string
+  email: string
+  firstName: string
+  lastName: string
+  fullName: string
+  departmentName: string
+  departmentId: number
+  position: string
+  registrationDate: string
+  lastAccess: string
+  extendedDataId: number
+}
+
+interface ApiResponse {
+  success: boolean
+  message: string
+  data: {
+    data: ApiUser[]
+    totalElements: number
+    totalPages: number
+    currentPage: number
+    pageSize: number
+    first: boolean
+    last: boolean
+    searchTerm: string
+  }
+  errorCode: string | null
 }
 
 interface RecipientSearchPanelProps {
@@ -109,67 +64,156 @@ export default function RecipientSearchPanel({
 }: RecipientSearchPanelProps) {
   const [activeTab, setActiveTab] = useState<"recipients" | "sender">("recipients")
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedInstitution, setSelectedInstitution] = useState("")
-  const [searchResults, setSearchResults] = useState<typeof MOCK_USERS>([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [users, setUsers] = useState<ApiUser[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
-  // Filtrar usuarios basado en término de búsqueda e institución seleccionada
-  const filterUsers = useCallback(() => {
-    setIsSearching(true)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const searchTimeoutRef = useRef<NodeJS.Timeout>()
 
-    // Simular una búsqueda con delay para mostrar el estado de carga
-    setTimeout(() => {
-      let results = [...MOCK_USERS]
+  const PAGE_SIZE = 20
 
-      // Filtrar por término de búsqueda
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase()
-        results = results.filter(
-          (user) =>
-            user.name.toLowerCase().includes(term) ||
-            user.email.toLowerCase().includes(term) ||
-            user.institution.toLowerCase().includes(term) ||
-            user.position.toLowerCase().includes(term),
-        )
+  // Función para buscar usuarios - CORREGIDA
+  const searchUsers = useCallback(async (query: string, page = 0, reset = true) => {
+    try {
+      // Verificar que tenemos autenticación antes de hacer la request
+      if (typeof window !== "undefined") {
+        const auth = JSON.parse(localStorage.getItem("auth") || "{}")
+        console.log("🔐 Current auth state:", { hasToken: !!auth.token, tokenLength: auth.token?.length })
+
+        if (!auth.token) {
+          setError("No hay token de autenticación. Por favor, inicia sesión nuevamente.")
+          return
+        }
       }
 
-      // Filtrar por institución
-      if (selectedInstitution) {
-        results = results.filter((user) => user.institutionId === selectedInstitution)
+      if (reset) {
+        setIsLoading(true)
+        setError(null)
+      } else {
+        setIsLoadingMore(true)
       }
 
-      // Para la pestaña de destinatarios, excluir destinatarios ya seleccionados
-      if (activeTab === "recipients") {
-        const existingIds = existingRecipients.map((r) => r.id)
-        results = results.filter((user) => !existingIds.includes(user.id))
+      console.log("🔍 Making search request with GET method:", { query, page, reset })
+
+      // Llamar directamente al método corregido
+      const response = await apiClient.searchDocumentUsers(query, page, PAGE_SIZE)
+
+      console.log("📋 Search response:", response)
+
+      if (response.success) {
+        const newUsers = response.data.data
+
+        if (reset) {
+          setUsers(newUsers)
+        } else {
+          setUsers((prev) => [...prev, ...newUsers])
+        }
+
+        setHasMore(!response.data.last)
+        setCurrentPage(response.data.currentPage)
+      } else {
+        throw new Error(response.message || "Error al buscar usuarios")
+      }
+    } catch (err) {
+      console.error("❌ Error searching users:", err)
+
+      // Si es error 401, redirigir al login
+      if (err instanceof Error && err.message.includes("401")) {
+        setError("Sesión expirada. Redirigiendo al login...")
+        setTimeout(() => {
+          window.location.href = "/login"
+        }, 2000)
+      } else {
+        setError(err instanceof Error ? err.message : "Error al buscar usuarios")
       }
 
-      setSearchResults(results)
-      setIsSearching(false)
-    }, 300)
-  }, [searchTerm, selectedInstitution, existingRecipients, activeTab])
+      if (reset) {
+        setUsers([])
+      }
+    } finally {
+      setIsLoading(false)
+      setIsLoadingMore(false)
+    }
+  }, [])
 
-  // Actualizar resultados cuando cambia el término de búsqueda, la institución o la pestaña activa
+  // Efecto para búsqueda con debounce
   useEffect(() => {
-    filterUsers()
-  }, [searchTerm, selectedInstitution, activeTab, filterUsers])
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
 
-  // Limpiar búsqueda al cambiar de pestaña
+    searchTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(0)
+      searchUsers(searchTerm, 0, true)
+    }, 300)
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [searchTerm, searchUsers])
+
+  // Cargar más usuarios cuando cambia la pestaña
   useEffect(() => {
     setSearchTerm("")
-    setSelectedInstitution("")
-  }, [activeTab])
+    setCurrentPage(0)
+    searchUsers("", 0, true)
+  }, [activeTab, searchUsers])
 
-  // Agrupar resultados por institución para mejor visualización
-  const groupedResults = searchResults.reduce(
+  // Scroll infinito
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current
+    if (!container || isLoadingMore || !hasMore) return
+
+    const { scrollTop, scrollHeight, clientHeight } = container
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      searchUsers(searchTerm, currentPage + 1, false)
+    }
+  }, [searchTerm, currentPage, isLoadingMore, hasMore, searchUsers])
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener("scroll", handleScroll)
+      return () => container.removeEventListener("scroll", handleScroll)
+    }
+  }, [handleScroll])
+
+  // Convertir usuario de API a formato esperado
+  const convertUser = (user: ApiUser) => ({
+    id: user.userId.toString(),
+    name: user.fullName,
+    email: user.email,
+    department: user.departmentName,
+    position: user.position,
+    institution: user.departmentName,
+  })
+
+  // Filtrar usuarios ya seleccionados para destinatarios
+  const getFilteredUsers = () => {
+    if (activeTab === "recipients") {
+      const existingIds = existingRecipients.map((r) => r.id)
+      return users.filter((user) => !existingIds.includes(user.userId.toString()))
+    }
+    return users
+  }
+
+  // Agrupar usuarios por departamento
+  const groupedUsers = getFilteredUsers().reduce(
     (acc, user) => {
-      if (!acc[user.institution]) {
-        acc[user.institution] = []
+      const dept = user.departmentName || "Sin Departamento"
+      if (!acc[dept]) {
+        acc[dept] = []
       }
-      acc[user.institution].push(user)
+      acc[dept].push(user)
       return acc
     },
-    {} as Record<string, typeof MOCK_USERS>,
+    {} as Record<string, ApiUser[]>,
   )
 
   return (
@@ -227,23 +271,23 @@ export default function RecipientSearchPanel({
                 </div>
                 <div>
                   <p className="font-medium text-blue-800">Selección rápida</p>
-                  <p className="text-sm text-blue-700">{CURRENT_USER.name}</p>
+                  <p className="text-sm text-blue-700">{CURRENT_USER.fullName}</p>
                   <p className="text-xs text-blue-600">{CURRENT_USER.email}</p>
                 </div>
               </div>
               <button
                 onClick={() => onSenderSelect(CURRENT_USER)}
                 className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                disabled={currentSender?.id === CURRENT_USER.id}
+                disabled={currentSender?.id === CURRENT_USER.userId}
               >
-                {currentSender?.id === CURRENT_USER.id ? "Seleccionado" : "De"}
+                {currentSender?.id === CURRENT_USER.userId ? "Seleccionado" : "De"}
               </button>
             </div>
           </div>
         )}
 
         {/* Current Sender Display (only in sender tab) */}
-        {activeTab === "sender" && currentSender && currentSender.id !== CURRENT_USER.id && (
+        {activeTab === "sender" && currentSender && currentSender.id !== CURRENT_USER.userId && (
           <div className="p-4 bg-green-50 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -269,7 +313,7 @@ export default function RecipientSearchPanel({
 
         {/* Search Controls */}
         <div className="p-4 border-b">
-          <div className="relative mb-4">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
@@ -282,96 +326,108 @@ export default function RecipientSearchPanel({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {isLoading && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              </div>
+            )}
           </div>
-
-          {activeTab === "recipients" && (
-            <div className="mb-2">
-              <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-1">
-                Institución
-              </label>
-              <select
-                id="institution"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedInstitution}
-                onChange={(e) => setSelectedInstitution(e.target.value)}
-              >
-                <option value="">Todas las instituciones</option>
-                {MOCK_INSTITUTIONS.map((institution) => (
-                  <option key={institution.id} value={institution.id}>
-                    {institution.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
 
         {/* Results */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {isSearching ? (
-            <div className="flex justify-center items-center h-20">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">Buscando...</span>
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
+          {error ? (
+            <div className="text-center py-8 text-red-500">
+              <Users className="mx-auto h-12 w-12 text-red-400" />
+              <p className="mt-2">Error al cargar usuarios</p>
+              <p className="text-sm">{error}</p>
+              <button
+                onClick={() => searchUsers(searchTerm, 0, true)}
+                className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Reintentar
+              </button>
             </div>
-          ) : searchResults.length === 0 ? (
+          ) : isLoading ? (
+            <div className="flex justify-center items-center h-20">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+              <span className="ml-2 text-gray-600">Cargando usuarios...</span>
+            </div>
+          ) : Object.keys(groupedUsers).length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-2">No se encontraron resultados</p>
-              <p className="text-sm">Intenta con otros términos de búsqueda o filtros</p>
+              <p className="mt-2">No se encontraron usuarios</p>
+              <p className="text-sm">Intenta con otros términos de búsqueda</p>
             </div>
           ) : (
-            Object.entries(groupedResults).map(([institution, users]) => (
-              <div key={institution} className="mb-6">
-                <div className="flex items-center mb-2">
-                  <Building2 className="h-4 w-4 mr-2 text-gray-500" />
-                  <h3 className="text-sm font-semibold text-gray-700">{institution}</h3>
-                </div>
-                <div className="space-y-2">
-                  {users.map((user) => (
-                    <div key={user.id} className="p-3 border rounded-md hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center">
-                          <div className="bg-blue-100 rounded-full p-2 mr-3">
-                            <User className="h-5 w-5 text-blue-600" />
+            <>
+              {Object.entries(groupedUsers).map(([department, departmentUsers]) => (
+                <div key={department} className="mb-6">
+                  <div className="flex items-center mb-2">
+                    <Building2 className="h-4 w-4 mr-2 text-gray-500" />
+                    <h3 className="text-sm font-semibold text-gray-700">{department}</h3>
+                    <span className="ml-2 text-xs text-gray-500">({departmentUsers.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {departmentUsers.map((user) => (
+                      <div key={user.userId} className="p-3 border rounded-md hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-blue-100 rounded-full p-2 mr-3">
+                              <User className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{user.fullName}</p>
+                              <p className="text-sm text-gray-600">{user.email}</p>
+                              <p className="text-xs text-gray-500">{user.position}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-gray-600">{user.email}</p>
-                            <p className="text-xs text-gray-500">{user.position}</p>
+                          <div className="flex space-x-2">
+                            {activeTab === "sender" ? (
+                              <button
+                                onClick={() => onSenderSelect(convertUser(user))}
+                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                disabled={currentSender?.id === user.userId.toString()}
+                              >
+                                {currentSender?.id === user.userId.toString() ? "Seleccionado" : "De"}
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => onRecipientSelect(convertUser(user), "to")}
+                                  className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                >
+                                  Para
+                                </button>
+                                <button
+                                  onClick={() => onRecipientSelect(convertUser(user), "cc")}
+                                  className="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                                >
+                                  CC
+                                </button>
+                              </>
+                            )}
                           </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          {activeTab === "sender" ? (
-                            <button
-                              onClick={() => onSenderSelect(user)}
-                              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                              disabled={currentSender?.id === user.id}
-                            >
-                              {currentSender?.id === user.id ? "Seleccionado" : "De"}
-                            </button>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => onRecipientSelect(user, "to")}
-                                className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                              >
-                                Para
-                              </button>
-                              <button
-                                onClick={() => onRecipientSelect(user, "cc")}
-                                className="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-                              >
-                                CC
-                              </button>
-                            </>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+
+              {/* Loading more indicator */}
+              {isLoadingMore && (
+                <div className="flex justify-center items-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                  <span className="ml-2 text-sm text-gray-600">Cargando más usuarios...</span>
+                </div>
+              )}
+
+              {/* End of results indicator */}
+              {!hasMore && users.length > 0 && (
+                <div className="text-center py-4 text-gray-500 text-sm">No hay más usuarios para mostrar</div>
+              )}
+            </>
           )}
         </div>
       </div>

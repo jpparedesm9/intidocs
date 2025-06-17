@@ -125,6 +125,38 @@ export class ApiClient {
       return false
     }
   }
+
+  // Document Users endpoints - CORREGIDO para usar GET explícitamente
+  async searchDocumentUsers(query = "", page = 0, size = 20) {
+    console.log("🔍 Searching document users:", { query, page, size })
+
+    // Verificar que tenemos el token antes de hacer la request
+    const authHeaders = this.getAuthHeaders()
+    console.log("🔑 Auth headers for search:", authHeaders)
+
+    if (!authHeaders.Authorization) {
+      console.warn("⚠️ No authorization token found for document users search")
+    }
+
+    // Construir URL con parámetros de query
+    const searchParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      q: query,
+    })
+
+    const endpoint = `/document-users/search?${searchParams.toString()}`
+    console.log("🌐 Final endpoint:", endpoint)
+
+    // Usar GET explícitamente y sin Content-Type para evitar preflight OPTIONS
+    return this.request(endpoint, {
+      method: "GET",
+      headers: {
+        Authorization: authHeaders.Authorization || "",
+        Accept: "application/json",
+      },
+    })
+  }
 }
 
 export const apiClient = new ApiClient()
