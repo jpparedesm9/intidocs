@@ -14,8 +14,8 @@ import { useAuth } from "@/hooks/use-auth"
 const BACKEND_LOGIN_URL = "http://127.0.0.1:8082/api/intdocs/auth/login"
 
 export function LoginForm() {
-  const [username, setUsername] = useState("globalgad")
-  const [password, setPassword] = useState("ERPGADMCM2o2o")
+  const [username, setUsername] = useState("admin")
+  const [password, setPassword] = useState("admin123")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null)
@@ -96,6 +96,47 @@ export function LoginForm() {
     setIsLoading(true)
     setConnectionStatus(null)
     setLastError(null)
+
+    // Check for mock login with username "admin"
+    if (username.trim().toLowerCase() === "admin") {
+      console.log("=== MOCK LOGIN ===")
+      console.log("1. Using mock data for 'admin' user")
+      
+      // Create mock auth data
+      const mockAuthData = {
+        token: "mock-jwt-token-xyz123456789",
+        tokenType: "Bearer",
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+        user: {
+          userId: 1,
+          username: "admin",
+          fullName: "Administrador del Sistema",
+          email: "admin@example.com",
+          roles: ["ADMIN", "USER"],
+          permissions: ["CREATE_DOCUMENT", "READ_DOCUMENT", "UPDATE_DOCUMENT", "DELETE_DOCUMENT"],
+          organizationId: 1,
+          organizationName: "Organización Demo",
+          departmentId: 1,
+          departmentName: "Administración",
+          userSource: "MOCK",
+        },
+      }
+
+      // Short delay to simulate network request
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      console.log("2. Mock login successful, storing auth data")
+      login(mockAuthData)
+
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: `Bienvenido, ${mockAuthData.user.fullName}`,
+        variant: "success",
+      })
+      
+      setIsLoading(false)
+      return
+    }
 
     try {
       console.log("=== DIRECT LOGIN DEBUG ===")
@@ -362,6 +403,7 @@ export function LoginForm() {
               <AlertCircle className="h-3 w-3 mr-1" />
               <span className="font-semibold">Información de Debug</span>
             </div>
+            <p>• Modo Mock: Usuario "admin" con cualquier contraseña para login de prueba</p>
             <p>• Conexión: DIRECTA (sin proxy)</p>
             <p>• Backend URL: {BACKEND_LOGIN_URL}</p>
             <p>• Usuario: {username}</p>

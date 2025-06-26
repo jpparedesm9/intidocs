@@ -267,7 +267,7 @@ export default function GmailInterface() {
                 )}
               </div>
               
-              {/* Botón de Nuevo Documento */}
+              {/* Botón de Nuevo Documento - Comentado para ocultarlo
               {sidebarCollapsed ? (
                 <div style={{ width: '100% !important', padding: '0 1rem', boxSizing: 'border-box' }}>
                   <button 
@@ -299,7 +299,7 @@ export default function GmailInterface() {
                     </svg>
                   </button>
                 </div>
-              )}
+              )} */}
               
               {/* Caja de búsqueda - solo visible cuando el sidebar está expandido */}
               {!sidebarCollapsed && (
@@ -718,6 +718,7 @@ export default function GmailInterface() {
 
         {/* Mobile buttons - only visible on small screens */}
         <div className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex gap-4">
+          {/* Botón de Nuevo Documento en móvil - Comentado para ocultarlo
           <Button
             onClick={handleComposeClick}
             className="rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white shadow-xl px-6 py-6"
@@ -729,6 +730,7 @@ export default function GmailInterface() {
               <path d="M12 5v14M5 12h14"></path>
             </svg>
           </Button>
+          */}
           <Button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="rounded-full bg-gradient-to-br from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white shadow-lg"
@@ -747,6 +749,7 @@ export default function GmailInterface() {
             <div className="h-full w-64 bg-[#202124] text-white overflow-auto">
               {/* Mobile sidebar content - copy of desktop sidebar */}
               <div className="p-4 pt-12 pb-2">
+                {/* Botón de Nuevo Documento en sidebar móvil - Comentado para ocultarlo
                 <Button
                   onClick={handleComposeClick}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-2xl py-3 px-6 flex items-center justify-start"
@@ -754,6 +757,7 @@ export default function GmailInterface() {
                   <Edit3 className="h-4 w-4 mr-3" />
                   Nuevo Documento
                 </Button>
+                */}
               </div>
               {/* Mobile sidebar menu items */}
               <div className="p-4">
