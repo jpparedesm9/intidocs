@@ -92,3 +92,32 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Fix for label/select interaction issues */
+/* Ensure any parent containing a label + select combo has position relative */
+div:has(> label + select),
+div:has(> label + [data-radix-select-trigger]),
+div:has(> label + [data-radix-dropdown-menu-trigger]),
+div:has(> label + input) {
+  position: relative !important;
+}
+
+/* Ensure all labels stay visible */
+label {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  transition: color 0.2s ease !important;
+}
+
+/* Prevent select/combobox elements from moving */
+select, 
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger] {
+  position: relative !important;
+  transform: none !important;
+  transition: border-color 0.2s ease !important;
+}

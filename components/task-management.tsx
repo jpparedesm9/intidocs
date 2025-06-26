@@ -53,6 +53,15 @@ interface Task {
 }
 
 export function TaskManagement() {
+  // Establecer estilo para garantizar interactividad
+  const containerStyle = {
+    position: 'relative' as const,
+    pointerEvents: 'auto' as const,
+    height: '100%',
+    width: '100%',
+    zIndex: 10,
+    overflow: 'auto'
+  };
   // Sample task data (simulating a backend or data source)
   const initialTasks: Task[] = [
     {
@@ -355,7 +364,9 @@ export function TaskManagement() {
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
 
   return (
-    <div className="flex flex-1 overflow-hidden w-full max-w-full">
+    <div 
+      className="flex flex-1 overflow-hidden w-full max-w-full"
+      style={containerStyle}>
       {/* Main Task List */}
       <div
         className={`flex-1 flex flex-col overflow-hidden ${

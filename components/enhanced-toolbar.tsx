@@ -26,9 +26,10 @@ import {
   Minus,
   FileIcon as FileTemplate,
   Paperclip,
-  Eye,
   X,
   AlertCircle,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -48,20 +49,32 @@ interface EnhancedToolbarProps {
   editor: Editor
   onOpenAttachmentManager?: () => void
   attachmentCount?: number
+  onOpenPreview?: () => void
+  isPreviewModalOpen?: boolean
+  onClosePreview?: () => void
+  pdfLoadError?: boolean
+  setPdfLoadError?: (error: boolean) => void
+  isExpanded?: boolean
+  onToggleExpand?: () => void
 }
 
 const EnhancedToolbar = memo(function EnhancedToolbar({
   editor,
   onOpenAttachmentManager,
   attachmentCount = 0,
+  onOpenPreview,
+  isPreviewModalOpen = false,
+  onClosePreview,
+  pdfLoadError = false,
+  setPdfLoadError,
+  isExpanded = false,
+  onToggleExpand,
 }: EnhancedToolbarProps) {
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [fontFamily, setFontFamily] = useState("Arial")
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
   const [isHighlightPickerOpen, setIsHighlightPickerOpen] = useState(false)
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
-  const [pdfLoadError, setPdfLoadError] = useState(false)
 
   const safeIsActive = useCallback(
     (name: string, attrs?: Record<string, any>) => {
@@ -154,11 +167,16 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
   const handleFontFamilyChange = useCallback(
     (font: string) => {
       try {
+        // Prevenir propagación de eventos
+        document.addEventListener('click', (e) => e.stopPropagation(), { once: true, capture: true });
+        
         setFontFamily(font)
         // Only apply if the extension is available
-        if (editor.can().setFontFamily) {
-          editor.chain().focus().setFontFamily(font).run()
-        }
+        setTimeout(() => {
+          if (editor.can().setFontFamily) {
+            editor.chain().focus().setFontFamily(font).run()
+          }
+        }, 10);
       } catch (error) {
         console.error("Error changing font family:", error)
       }
@@ -169,11 +187,17 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
   const setTextColor = useCallback(
     (color: string) => {
       try {
-        // Only apply if the extension is available
-        if (editor.can().setColor) {
-          editor.chain().focus().setColor(color).run()
-        }
-        setIsColorPickerOpen(false)
+        // Prevenir propagación de eventos
+        document.addEventListener('click', (e) => e.stopPropagation(), { once: true, capture: true });
+        
+        // Prevenir que el editor reciba el foco inmediatamente
+        setTimeout(() => {
+          // Only apply if the extension is available
+          if (editor.can().setColor) {
+            editor.chain().focus().setColor(color).run()
+          }
+          setIsColorPickerOpen(false)
+        }, 10);
       } catch (error) {
         console.error("Error setting text color:", error)
       }
@@ -184,11 +208,17 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
   const setHighlightColor = useCallback(
     (color: string) => {
       try {
-        // Only apply if the extension is available
-        if (editor.can().setHighlight) {
-          editor.chain().focus().setHighlight({ color }).run()
-        }
-        setIsHighlightPickerOpen(false)
+        // Prevenir propagación de eventos
+        document.addEventListener('click', (e) => e.stopPropagation(), { once: true, capture: true });
+        
+        // Prevenir que el editor reciba el foco inmediatamente
+        setTimeout(() => {
+          // Only apply if the extension is available
+          if (editor.can().setHighlight) {
+            editor.chain().focus().setHighlight({ color }).run()
+          }
+          setIsHighlightPickerOpen(false)
+        }, 10);
       } catch (error) {
         console.error("Error setting highlight color:", error)
       }
@@ -198,14 +228,17 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
 
   // Handle PDF load error
   const handlePdfError = useCallback(() => {
-    setPdfLoadError(true)
-  }, [])
+    if (setPdfLoadError) {
+      setPdfLoadError(true)
+    }
+  }, [setPdfLoadError])
 
-  // Reset PDF error when modal opens
+  // Use the provided openPreview function if available, otherwise use a no-op
   const openPreviewModal = useCallback(() => {
-    setPdfLoadError(false)
-    setIsPreviewModalOpen(true)
-  }, [])
+    if (onOpenPreview) {
+      onOpenPreview()
+    }
+  }, [onOpenPreview])
 
   // Memoize static arrays to prevent recreation on re-renders
   const colors = useMemo(
@@ -253,7 +286,11 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
 
   return (
     <>
-      <div className="border-b border-gray-200 bg-white p-1 flex flex-wrap items-center gap-1">
+      <div 
+        className="border-b border-gray-200 bg-white p-1 flex flex-wrap items-center gap-1"
+        style={{ position: 'relative', zIndex: 40 }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Undo/Redo */}
         <Button variant="ghost" size="sm" onClick={undoHandler} title="Undo" className="h-8 w-8 p-0">
           <Undo className="h-4 w-4" />
@@ -272,7 +309,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
               <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent sideOffset={5}>
             {fontFamilies.map((font) => (
               <DropdownMenuItem
                 key={font}
@@ -291,10 +328,11 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
           <Input
             type="number"
             value={fontSize}
-            onChange={(e) => handleFontSizeChange(Number.parseInt(e.target.value) || 11)}
-            className="h-8 w-16 text-xs" // Increased width from w-12 to w-16
+            onChange={(e) => handleFontSizeChange(Number.parseInt(e.target.value) || 12)}
+            className="h-8 w-16 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-gray-300"
             min={8}
             max={72}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
 
@@ -345,7 +383,13 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
               <Palette className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-2">
+          <PopoverContent 
+            className="w-auto p-2" 
+            align="center" 
+            sideOffset={5} 
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => e.preventDefault()}
+          >
             <div className="grid grid-cols-10 gap-1">
               {colors.map((color) => (
                 <button
@@ -367,7 +411,13 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
               <Highlighter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-2">
+          <PopoverContent 
+            className="w-auto p-2" 
+            align="center" 
+            sideOffset={5}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => e.preventDefault()}
+          >
             <div className="grid grid-cols-10 gap-1">
               {colors.map((color) => (
                 <button
@@ -455,7 +505,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
               <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent sideOffset={5}>
             <DropdownMenuItem
               onClick={safeCommand(() => editor.chain().focus().toggleHeading({ level: 1 }).run())}
               className={safeIsActive("heading", { level: 1 }) ? "bg-gray-100" : ""}
@@ -519,16 +569,19 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
           <span className="text-xs">Templates</span>
         </Button>
 
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <Button
           variant="ghost"
           size="sm"
-          onClick={openPreviewModal}
-          title="Vista Previa"
+          onClick={onToggleExpand}
+          title={isExpanded ? "Contraer" : "Expandir"}
           className="h-8 px-2 flex items-center gap-1"
         >
-          <Eye className="h-4 w-4" />
-          <span className="text-xs">Vista Previa</span>
+          {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          <span className="text-xs">{isExpanded ? "Contraer" : "Expandir"}</span>
         </Button>
+
       </div>
 
       {/* Template Manager Dialog */}
@@ -542,7 +595,7 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-lg font-semibold">Vista Previa del Documento</h2>
               <button
-                onClick={() => setIsPreviewModalOpen(false)}
+                onClick={onClosePreview}
                 className="p-1 hover:bg-gray-100 rounded"
                 title="Cerrar"
               >
@@ -562,7 +615,9 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setPdfLoadError(false)
+                      if (setPdfLoadError) {
+                        setPdfLoadError(false)
+                      }
                       // Force iframe reload
                       const iframe = document.querySelector("#preview-iframe") as HTMLIFrameElement
                       if (iframe) {
@@ -580,7 +635,11 @@ const EnhancedToolbar = memo(function EnhancedToolbar({
                   className="w-full h-full border rounded"
                   title="Vista Previa PDF"
                   onError={handlePdfError}
-                  onLoad={() => setPdfLoadError(false)}
+                  onLoad={() => {
+                    if (setPdfLoadError) {
+                      setPdfLoadError(false)
+                    }
+                  }}
                 />
               )}
             </div>

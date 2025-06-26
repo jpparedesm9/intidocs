@@ -1,0 +1,55 @@
+/**
+ * Clean dropdown and select component fixes
+ * This file corrects positioning issues with Radix UI dropdown components
+ */
+
+/* Base stacking context for dropdown elements */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+  /* Preserve the transform properties from Radix */
+}
+
+/* Content elements should inherit positioning from their wrappers */
+[data-radix-select-content],
+[data-radix-dropdown-menu-content] {
+  position: relative !important;
+  /* Let the parent wrapper handle the absolute positioning */
+}
+
+/* Set standard z-index values for UI layers */
+.document-editor {
+  z-index: 10;
+}
+
+.document-editor button,
+.document-editor input,
+.document-editor [data-radix-select-trigger] {
+  z-index: 20;
+}
+
+/* Reset any fixed positioning that would break dropdown positioning */
+[role="listbox"],
+[role="menu"],
+[role="dialog"] {
+  position: relative !important;
+  /* Don't override transforms or animations that control positioning */
+}
+
+/* Keep labels properly visible */
+label {
+  display: block;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure select and dropdown triggers maintain correct positioning */
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger] {
+  position: relative;
+  width: 100%;
+}
+
+/* Fix for portal positioning */
+[data-radix-portal] {
+  z-index: 9999;
+}

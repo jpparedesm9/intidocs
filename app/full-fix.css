@@ -1,0 +1,120 @@
+/* Solución integral para problemas de interactividad */
+
+/* 
+   Implementación basada en el enfoque del document-editor que sí funciona correctamente.
+   Aplicamos pointer-events: auto a todos los elementos interactivos y sus contenedores.
+*/
+
+/* Solución global para problemas de interactividad */
+html, body, div, button, input, a, label, span, p, ul, li, table, tr, td, th {
+  pointer-events: auto !important;
+}
+
+/* Reestablecer pointer-events para algunos elementos que deben ser no interactivos */
+.disabled, 
+[disabled], 
+[aria-disabled="true"] {
+  pointer-events: none !important;
+}
+
+/* Reglas específicas para componentes de la interfaz - similar al document-editor */
+.email-item,
+.sidebar-menu-button,
+[data-sidebar="menu-button"],
+[data-sidebar="menu-item"],
+.cursor-pointer,
+[role="button"],
+button,
+input[type="checkbox"],
+a {
+  pointer-events: auto !important;
+}
+
+/* Containers principales */
+#dynamic-content-container,
+#main-layout-container,
+#sidebar-container,
+.tracking-management,
+.task-management,
+.dashboard-view,
+.administration-management,
+.email-section,
+.email-item {
+  pointer-events: auto !important;
+}
+
+/* Asegurar que todos los contenedores de Radix UI funcionen correctamente */
+[data-radix-portal],
+[data-radix-popper-content-wrapper],
+[data-radix-select-content],
+[data-radix-dropdown-menu-content],
+[role="dialog"],
+[role="listbox"],
+[role="menu"],
+[role="menuitem"] {
+  pointer-events: auto !important;
+}
+
+/* Asegurar que los checkboxes sean siempre visibles e interactivos */
+input[type="checkbox"] {
+  pointer-events: auto !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  height: 16px !important;
+  width: 16px !important;
+  border: 1px solid #dadce0 !important;
+  border-radius: 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  background-color: white !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #1a73e8 !important;
+  border-color: #1a73e8 !important;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "" !important;
+  display: block !important;
+  width: 4px !important;
+  height: 8px !important;
+  border: solid white !important;
+  border-width: 0 2px 2px 0 !important;
+  transform: rotate(45deg) !important;
+  margin-bottom: 2px !important;
+}
+
+/* Reglas específicas para funcionamiento del tracking management y otras secciones */
+.page-container,
+[onClick],
+[onclick],
+div[class*="cursor-pointer"],
+div[class*="hover:bg-gray-100"] {
+  pointer-events: auto !important;
+}
+
+/* Secciones específicas de contenido */
+.tracking-management *,
+.task-management *,
+.administration-management *,
+.email-section * {
+  pointer-events: auto !important;
+}
+
+/* Hacer clic en la sección del sidebar */
+div[onClick*="toggleSection"],
+div[onclick*="toggleSection"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Remover las reglas que pueden causar problemas */
+* {
+  pointer-events: auto !important;
+}

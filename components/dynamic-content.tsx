@@ -8,29 +8,90 @@ import { EmptyContent } from "./empty-content"
 import { DashboardView } from "./dashboard-view"
 import { DocumentSend } from "./document-send"
 import { DocumentHistory } from "./document-history"
+import DocumentEditor from "./document-editor"
+import { useEffect, useState } from "react"
 
 interface DynamicContentProps {
   selectedMenuItem: string
+  documentId?: string | null
+  sidebarCollapsed?: boolean
 }
 
-export function DynamicContent({ selectedMenuItem }: DynamicContentProps) {
+export function DynamicContent({ selectedMenuItem, documentId, sidebarCollapsed = false }: DynamicContentProps) {
+  // Si tenemos un documentId, mostramos el editor independientemente del selectedMenuItem
+  if (documentId) {
+    return (
+      <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+        <DocumentEditor initialDocumentId={documentId} sidebarCollapsed={sidebarCollapsed} />
+      </div>
+    );
+  }
+
+  // Si selectedMenuItem es "compose", mostrar el editor
+  if (selectedMenuItem === "compose") {
+    return (
+      <div 
+        className="w-full h-full" 
+        style={{ 
+          position: 'relative', 
+          pointerEvents: 'auto',
+          overflow: 'visible'
+        }}
+      >
+        <DocumentEditor sidebarCollapsed={sidebarCollapsed} />
+      </div>
+    );
+  }
+
   // Render different content based on the selected menu item
   switch (selectedMenuItem) {
     case "dashboard":
-      return <DashboardView />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <DashboardView />
+        </div>
+      );
     case "recibidos":
-      return <GmailMainContent />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <GmailMainContent />
+        </div>
+      );
     case "tareas":
-      return <TaskManagement />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <TaskManagement />
+        </div>
+      );
     case "seguimiento":
-      return <TrackingManagement />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <TrackingManagement />
+        </div>
+      );
     case "administracion":
-      return <AdministrationManagement />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <AdministrationManagement />
+        </div>
+      );
     case "enviar":
-      return <DocumentSend />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <DocumentSend />
+        </div>
+      );
     case "historial":
-      return <DocumentHistory />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <DocumentHistory />
+        </div>
+      );
     default:
-      return <EmptyContent selectedSection={selectedMenuItem} />
+      return (
+        <div className="w-full h-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+          <EmptyContent selectedSection={selectedMenuItem} />
+        </div>
+      );
   }
 }

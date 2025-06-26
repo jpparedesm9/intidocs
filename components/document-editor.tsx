@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
+import { createPortal } from "react-dom"
 import StarterKit from "@tiptap/starter-kit"
 import TextStyle from "@tiptap/extension-text-style"
 import Image from "@tiptap/extension-image"
@@ -25,15 +26,23 @@ import { useDebounce } from "@/hooks/use-debounce"
 import { generateId } from "@/lib/utils"
 import ErrorBoundary from "./error-boundary"
 import { useToast } from "@/hooks/use-toast"
-import { ToastContainer } from "./toast"
 import HorizontalRuler from "./horizontal-ruler"
 import VerticalRuler from "./vertical-ruler"
 import { useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { AlertCircle, X } from "lucide-react"
+import DocumentHeaderExpanded from "./document-header-expanded"
 
-// Dynamically import heavy components
-const DocumentHeader = dynamic(() => import("./document-header"), { ssr: false })
-const EnhancedToolbar = dynamic(() => import("./enhanced-toolbar"), { ssr: false })
-const RecipientSearchPanel = dynamic(() => import("./recipient-search-panel"), { ssr: false })
+// Dynamically import heavy components with explicit loading options
+const DocumentHeader = dynamic(() => import("./document-header"), { 
+  ssr: false,
+  loading: () => <div className="bg-white border-b border-gray-200 px-4 py-2">Cargando encabezado...</div>
+})
+const EnhancedToolbar = dynamic(() => import("./enhanced-toolbar"), { 
+  ssr: false,
+  loading: () => <div className="border-b border-gray-200 bg-white p-1">Cargando herramientas...</div>
+})
+const SearchRecipientsModal = dynamic(() => import("./search-recipients-modal"), { ssr: false })
 const AttachmentManager = dynamic(() => import("./attachment-manager"), { ssr: false })
 
 interface AttachmentFile {
@@ -46,7 +55,12 @@ interface AttachmentFile {
   status: "uploading" | "completed" | "error"
 }
 
-export default function DocumentEditor() {
+interface DocumentEditorProps {
+  initialDocumentId?: string | null
+  sidebarCollapsed?: boolean
+}
+
+export default function DocumentEditor({ initialDocumentId, sidebarCollapsed = false }: DocumentEditorProps = {}) {
   const [documentTitle, setDocumentTitle] = useState("Untitled Document")
   const [documentId, setDocumentId] = useState("")
   const [isSaving, setIsSaving] = useState(false)
@@ -57,14 +71,17 @@ export default function DocumentEditor() {
   const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 })
   const [documentData, setDocumentData] = useState(null)
   const [isLoadingDocument, setIsLoadingDocument] = useState(false)
-  const [isRecipientPanelOpen, setIsRecipientPanelOpen] = useState(false)
   const [isAttachmentManagerOpen, setIsAttachmentManagerOpen] = useState(false)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [pdfLoadError, setPdfLoadError] = useState(false)
   const [attachments, setAttachments] = useState<AttachmentFile[]>([])
+  const [isExpanded, setIsExpanded] = useState(true)
+  const [portalMounted, setPortalMounted] = useState(false)
   const [recipients, setRecipients] = useState<{
-    to: Array<{ id: string; name: string; email: string; institution?: string }>
-    cc: Array<{ id: string; name: string; email: string; institution?: string }>
+    to: Array<{ id: string; name: string; email: string; institution?: string; position?: string }>
+    cc: Array<{ id: string; name: string; email: string; institution?: string; position?: string }>
   }>({ to: [], cc: [] })
-  const [sender, setSender] = useState<{ id: string; name: string; email: string; institution?: string } | null>(null)
+  const [sender, setSender] = useState<{ id: string; name: string; email: string; institution?: string; position?: string } | null>(null)
   const searchParams = useSearchParams()
 
   // Initialize editor with extensions - memoize configuration
@@ -80,310 +97,248 @@ export default function DocumentEditor() {
       }),
       Table.configure({
         resizable: true,
-        lastColumnResizable: true,
-        cellMinWidth: 50,
-        HTMLAttributes: {
-          class: "border-collapse table-fixed w-full",
-        },
+        allowTableNodeSelection: true,
       }),
-      TableRow.configure({
-        HTMLAttributes: {
-          class: "border-b border-gray-200",
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class: "border border-gray-200 p-2",
-        },
-      }),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class: "bg-gray-100 font-bold border border-gray-200 p-2",
-        },
-      }),
+      TableRow,
+      TableCell,
+      TableHeader,
       TableCellAttributes,
       TextAlign.configure({
-        types: ["heading", "paragraph", "tableCell", "tableHeader"],
+        types: ["heading", "paragraph", "image"],
+        defaultAlignment: "left",
       }),
       Placeholder.configure({
-        placeholder: "Comienza a escribir tu documento...",
+        placeholder: "Comienza a escribir aquí...",
       }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-blue-500 underline",
-        },
-      }),
+      Link,
+      PageBreak,
       FontSize,
       FontFamily,
       TextColor,
       Highlight,
-      PageBreak,
     ],
-    [],
+    []
   )
 
-  // Create callback functions using useCallback to prevent recreations
-  const handleKeydown = useCallback((view, event) => {
-    try {
-      // Default behavior
-      return false
-    } catch (error) {
-      console.error("Error handling keydown:", error)
-      setEditorError(`Error handling keydown: ${error instanceof Error ? error.message : String(error)}`)
-      return true // Prevent default to avoid cascading errors
-    }
-  }, [])
-
-  const handleTransaction = useCallback(() => {
-    try {
-      // Clear any previous errors when a successful transaction occurs
-      if (editorError) {
-        setEditorError(null)
-      }
-    } catch (error) {
-      console.error("Error in onTransaction:", error)
-    }
-  }, [editorError])
-
-  const handleError = useCallback((error) => {
-    console.error("Editor error:", error)
-    setEditorError(`Editor error: ${error instanceof Error ? error.message : String(error)}`)
-  }, [])
-
-  // Forward declarations to handle circular references
-  const saveDocumentRef = useRef<(content?: any) => void>(() => {})
-  const debouncedSaveRef = useRef<(content: any) => void>(() => {})
-
-  // Create handleUpdate with references to avoid circular dependency
-  const handleUpdate = useCallback(({ editor }) => {
-    try {
-      if (editor && editor.getJSON && debouncedSaveRef.current) {
-        debouncedSaveRef.current(editor.getJSON())
-      }
-    } catch (error) {
-      console.error("Error in onUpdate:", error)
-      setEditorError(`Error updating content: ${error instanceof Error ? error.message : String(error)}`)
-    }
-  }, [])
-
-  // Memoize editor configuration
-  const editorConfig = useMemo(
-    () => ({
-      extensions: editorExtensions,
-      content: "",
-      editorProps: {
-        attributes: {
-          class: "prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[500px]",
-        },
-        handleDOMEvents: {
-          keydown: handleKeydown,
-        },
-      },
-      onUpdate: handleUpdate,
-      onTransaction: handleTransaction,
-      onError: handleError,
-      autofocus: false,
-      editable: true,
-    }),
-    [editorExtensions, handleKeydown, handleUpdate, handleTransaction, handleError],
-  )
-
-  const editor = useEditor(editorConfig)
-
-  // Save the current document - memoize with useCallback to avoid recreations
-  const saveDocument = useCallback(
-    (content: any = editor?.getJSON?.(), showToast = false) => {
-      try {
-        if (!documentId || !content) return
-
-        setIsSaving(true)
-
-        // Use a functional update to prevent stale closure issues
-        setDocuments((prevDocuments) => {
-          const updatedDocuments = [...prevDocuments]
-          const existingDocIndex = updatedDocuments.findIndex((doc) => doc.id === documentId)
-
-          if (existingDocIndex >= 0) {
-            updatedDocuments[existingDocIndex] = {
-              ...updatedDocuments[existingDocIndex],
-              title: documentTitle,
-              content,
-            }
-          } else {
-            updatedDocuments.push({
-              id: documentId,
-              title: documentTitle,
-              content,
-            })
-          }
-
-          // Use a more efficient approach - only stringify once
-          localStorage.setItem("documents", JSON.stringify(updatedDocuments))
-          return updatedDocuments
-        })
-
-        // Use setTimeout to avoid blocking the main thread during save operations
-        setTimeout(() => {
-          setIsSaving(false)
-
-          // Only show toast notification if explicitly requested (when Save button is clicked)
-          if (showToast) {
-            toast({
-              title: "Documento guardado",
-              description: "Tu documento ha sido guardado correctamente.",
-              variant: "success",
-              duration: 5000, // 5 seconds duration
-            })
-          }
-        }, 300)
-      } catch (error) {
-        console.error("Error saving document:", error)
-        setEditorError(`Error saving document: ${error instanceof Error ? error.message : String(error)}`)
-        setIsSaving(false)
-
-        // Always show error toast
-        toast({
-          title: "Error al guardar",
-          description: "Hubo un problema al guardar tu documento.",
-          variant: "destructive",
-          duration: 5000, // 5 seconds duration
-        })
-      }
+  // Inicializar editor usando useEditor
+  const editor = useEditor({
+    extensions: editorExtensions,
+    content: '<p style="font-size: 12px;">Contenido inicial del documento...</p>',
+    editable: true,
+    // Usar onUpdate para debounce para guardar automáticamente
+    onUpdate: ({ editor }) => {
+      console.log('Document changed')
     },
-    [documentId, documentTitle, toast, editor],
-  )
-
-  // Update the ref
-  useEffect(() => {
-    saveDocumentRef.current = saveDocument
-  }, [saveDocument])
-
-  // Create the debounced save function
-  const debouncedSaveFunc = useCallback(
-    (content: any) => {
-      try {
-        if (documentId && saveDocumentRef.current) {
-          saveDocumentRef.current(content)
-        }
-      } catch (error) {
-        console.error("Error in debouncedSave:", error)
-        setEditorError(`Error saving document: ${error instanceof Error ? error.message : String(error)}`)
-      }
+    onSelectionUpdate: ({ editor }) => {
+      // Lógica cuando cambia la selección
     },
-    [documentId],
-  )
+    onTransaction: ({ editor, transaction }) => {
+      // Puedes agregar analíticas o procesamiento adicional aquí
+    },
+    onFocus: ({ editor, event }) => {
+      console.log('Editor focused')
+    },
+    onBlur: ({ editor, event }) => {
+      console.log('Editor blurred')
+    },
+  })
 
-  // Use the useDebounce hook directly - hooks can only be used at the top level
-  const debouncedSave = useDebounce(debouncedSaveFunc, 2000)
-
-  // Update the ref
+  // Actualizar posición de scroll para las reglas
   useEffect(() => {
-    debouncedSaveRef.current = debouncedSave
-  }, [debouncedSave])
-
-  // Handle scroll events to update ruler positions with debouncing
-  useEffect(() => {
-    const handleScroll = () => {
+    const updateScrollPosition = () => {
       if (editorContainerRef.current) {
-        // Use requestAnimationFrame for smoother scrolling
-        requestAnimationFrame(() => {
-          setScrollPosition({
-            x: editorContainerRef.current?.scrollLeft || 0,
-            y: editorContainerRef.current?.scrollTop || 0,
-          })
+        setScrollPosition({
+          x: editorContainerRef.current.scrollLeft,
+          y: editorContainerRef.current.scrollTop,
         })
       }
     }
 
     const editorContainer = editorContainerRef.current
     if (editorContainer) {
-      editorContainer.addEventListener("scroll", handleScroll, { passive: true })
-    }
-
-    return () => {
-      if (editorContainer) {
-        editorContainer.removeEventListener("scroll", handleScroll)
-      }
+      editorContainer.addEventListener("scroll", updateScrollPosition)
+      return () => editorContainer.removeEventListener("scroll", updateScrollPosition)
     }
   }, [])
 
-  // Load documents from local storage on mount
-  useEffect(() => {
-    try {
-      const savedDocuments = localStorage.getItem("documents")
-      if (savedDocuments) {
-        setDocuments(JSON.parse(savedDocuments))
+  // Función para guardar documento
+  const saveDocument = useCallback(
+    async (content: any = null, notify: boolean = false) => {
+      try {
+        setIsSaving(true)
+        
+        // Get JSON content from editor if not provided
+        const documentContent = content || editor?.getJSON?.()
+        
+        if (!documentContent) {
+          console.error("No content to save")
+          toast({
+            title: "Save failed",
+            description: "No content to save",
+            variant: "destructive",
+          })
+          return
+        }
+        
+        // For now, simulate saving to localStorage
+        // In a real app, you'd save to a backend server
+        const savedDoc = {
+          id: documentId || generateId(),
+          title: documentTitle,
+          content: documentContent,
+          savedAt: new Date().toISOString(),
+        }
+        
+        // Update or add to documents list
+        setDocuments((prev) => {
+          const existing = prev.findIndex((doc) => doc.id === savedDoc.id)
+          if (existing >= 0) {
+            const updated = [...prev]
+            updated[existing] = savedDoc
+            return updated
+          }
+          return [...prev, savedDoc]
+        })
+        
+        // Update current document ID
+        if (!documentId) {
+          setDocumentId(savedDoc.id)
+        }
+        
+        // Success notification
+        if (notify) {
+          toast({
+            title: "Document saved",
+            description: `"${documentTitle}" has been saved.`,
+            variant: "success",
+          })
+        }
+        
+        console.log("Document saved:", savedDoc)
+        return savedDoc
+      } catch (error) {
+        console.error("Error saving document:", error)
+        setEditorError(`Error saving: ${error instanceof Error ? error.message : String(error)}`)
+        toast({
+          title: "Save failed",
+          description: "There was a problem saving your document.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsSaving(false)
       }
-    } catch (error) {
-      console.error("Error loading documents:", error)
-      setEditorError(`Error loading documents: ${error instanceof Error ? error.message : String(error)}`)
-    }
+    },
+    [documentId, documentTitle, editor, toast]
+  )
+
+  // Utilidad para debounce de autoguardado
+  const debouncedSave = useDebounce(saveDocument, 2000)
+
+  // Handler for preview
+  const handleOpenPreview = useCallback(() => {
+    setIsPreviewModalOpen(true)
   }, [])
 
-  // Create a new document - memoize with useCallback
+  const handleClosePreview = useCallback(() => {
+    setIsPreviewModalOpen(false)
+  }, [])
+
+  // Memoize creating new document function
   const createNewDocument = useCallback(() => {
     try {
-      const id = generateId()
-      setDocumentId(id)
-      setDocumentTitle("Untitled Document")
-      if (editor && editor.commands) {
-        editor.commands.clearContent()
+      const newDoc = {
+        id: generateId(),
+        title: "Untitled Document",
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Comienza a escribir aquí...",
+                  marks: [
+                    {
+                      type: "textStyle",
+                      attrs: {
+                        fontSize: "12px"
+                      }
+                    }
+                  ]
+                },
+              ],
+            },
+          ],
+        },
       }
+      
+      setDocumentId(newDoc.id)
+      setDocumentTitle(newDoc.title)
+      
+      if (editor && editor.commands) {
+        editor.commands.setContent(newDoc.content)
+      }
+      
+      setDocuments((prev) => [...prev, newDoc])
+      
       toast({
         title: "New document created",
+        description: "You can now start editing your document.",
         variant: "success",
       })
+      
+      return newDoc
     } catch (error) {
-      console.error("Error creating new document:", error)
-      setEditorError(`Error creating new document: ${error instanceof Error ? error.message : String(error)}`)
+      console.error("Error creating document:", error)
+      setEditorError(`Error creating document: ${error instanceof Error ? error.message : String(error)}`)
     }
   }, [editor, toast])
 
-  // Load document from API
-  const loadDocumentFromAPI = async (documentId: string) => {
-    setIsLoadingDocument(true)
-    try {
-      const response = await fetch(`/api/documents/${documentId}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const result = await response.json()
-
-      if (result.success && result.data) {
-        const docData = result.data
-        setDocumentData(docData)
-        setDocumentTitle(docData.subject || "Untitled Document")
-        setDocumentId(documentId)
-
-        // Set content in editor
-        if (editor && docData.body) {
-          editor.commands.setContent(docData.body)
+  // Memoize load document from API function
+  const loadDocumentFromAPI = useCallback(
+    async (id: string) => {
+      try {
+        console.log(`Loading document with ID: ${id}`)
+        setIsLoadingDocument(true)
+        
+        // Simulate API call with delay
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        
+        // Check if we already have the document locally
+        const existingDoc = documents.find((doc) => doc.id === id)
+        
+        if (existingDoc) {
+          setDocumentId(existingDoc.id)
+          setDocumentTitle(existingDoc.title)
+          if (editor && editor.commands) {
+            editor.commands.setContent(existingDoc.content)
+          }
+          toast({
+            title: "Document loaded",
+            description: `"${existingDoc.title}" has been loaded.`,
+            variant: "success",
+          })
+          return existingDoc
         }
-
-        toast({
-          title: "Documento cargado",
-          description: `"${docData.subject}" se ha cargado correctamente.`,
-          variant: "success",
-        })
-      } else {
-        throw new Error(result.message || "Error al cargar el documento")
+        
+        // In a real app, you'd fetch from API here
+        // const response = await fetch(`/api/documents/${id}`)
+        // const data = await response.json()
+        
+        // For now, just create a new doc as fallback
+        throw new Error("Document not found locally")
+      } catch (error) {
+        console.error("Error loading document:", error)
+        
+        // Fallback to creating new document
+        createNewDocument()
+      } finally {
+        setIsLoadingDocument(false)
       }
-    } catch (error) {
-      console.error("Error loading document:", error)
-      toast({
-        title: "Error al cargar",
-        description: "No se pudo cargar el documento. Creando uno nuevo.",
-        variant: "destructive",
-      })
-      // Fallback to creating new document
-      createNewDocument()
-    } finally {
-      setIsLoadingDocument(false)
-    }
-  }
+    },
+    [documents, editor, toast, createNewDocument]
+  )
 
   // Memoize load document function
   const loadDocument = useCallback(
@@ -413,15 +368,16 @@ export default function DocumentEditor() {
     [documents, editor, toast],
   )
 
-  // Load document from URL parameter or create new one
+  // Load document from initialDocumentId, URL parameter, or create new one
   useEffect(() => {
     try {
       if (editor) {
-        const documentIdFromURL = searchParams.get("documentId")
+        // Usar initialDocumentId si está presente, si no, buscar en URL
+        const documentIdToLoad = initialDocumentId || searchParams.get("documentId")
 
-        if (documentIdFromURL && !documentId) {
+        if (documentIdToLoad && !documentId) {
           // Load existing document
-          loadDocumentFromAPI(documentIdFromURL)
+          loadDocumentFromAPI(documentIdToLoad)
         } else if (!documentId) {
           // Create new document
           createNewDocument()
@@ -431,29 +387,55 @@ export default function DocumentEditor() {
       console.error("Error in document initialization:", error)
       setEditorError(`Error initializing document: ${error instanceof Error ? error.message : String(error)}`)
     }
-  }, [editor, documentId, searchParams, createNewDocument])
+  }, [editor, documentId, searchParams, createNewDocument, initialDocumentId])
 
-  // Ensure editor is focused and editable
+  // Simplificado: Manejo de enfoque del editor y configuración inicial
   useEffect(() => {
     try {
-      if (editor && editor.setEditable && editor.commands) {
+      if (editor && editor.setEditable) {
+        // Hacer el editor editable
         editor.setEditable(true)
-        setTimeout(() => {
-          if (editor.commands.focus) {
-            editor.commands.focus()
-          }
-        }, 100)
+        
+        // Establecer tamaño de fuente predeterminado
+        if (editor.commands && editor.commands.setFontSize) {
+          editor.commands.setFontSize('12px')
+        }
+        
+        // Enfocar el editor al inicializarse con un retraso para asegurar que el DOM esté listo
+        if (editor.commands && editor.commands.focus) {
+          setTimeout(() => {
+            editor.commands.focus('end')
+          }, 200)
+        }
       }
     } catch (error) {
-      console.error("Error focusing editor:", error)
-      setEditorError(`Error focusing editor: ${error instanceof Error ? error.message : String(error)}`)
+      console.error("Error initializing editor:", error)
+      setEditorError(`Error initializing editor: ${error instanceof Error ? error.message : String(error)}`)
     }
   }, [editor])
 
-  // Add print styles
+  // Efecto para gestionar el montaje del portal
   useEffect(() => {
+    setPortalMounted(true)
+    return () => setPortalMounted(false)
+  }, [])
+
+  // Add print styles and expanded mode styles
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
     const style = document.createElement("style")
     style.innerHTML = `
+      /* Default font size for editor content */
+      .ProseMirror {
+        font-size: 12px;
+      }
+      
+      /* Ensure paragraphs have default font size too */
+      .ProseMirror p {
+        font-size: 12px;
+      }
+      
       @media print {
         body * {
           visibility: hidden;
@@ -487,71 +469,141 @@ export default function DocumentEditor() {
           margin: 1em 0;
         }
       }
+      
+      /* Expanded editor styles */
+      .expanded-editor {
+        background-color: #f1f3f4 !important; /* Mantener el mismo color de fondo */
+      }
+      
+      .expanded-editor .page-container {
+        min-height: calc(100vh - 100px); /* Adjust for toolbar */
+        margin: 15px auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        width: 816px !important; /* Mantener el ancho fijo de carta US */
+        max-width: 90% !important; /* Con un límite máximo por si la pantalla es pequeña */
+      }
+      
+      .expanded-editor .ProseMirror {
+        min-height: calc(100vh - 150px); /* Adjust for toolbar and padding */
+      }
+      
+      .expanded-editor .flex-1.py-4.flex.justify-center.w-full {
+        padding-top: 10px !important;
+        padding-bottom: 20px !important;
+      }
+      
+      /* Estilos para las reglas en modo expandido - mantener colores claros */
+      .expanded-editor .horizontal-ruler-container {
+        background-color: #f1f3f4;
+        border-color: #e0e0e0;
+      }
+      
+      .expanded-editor .vertical-ruler {
+        background-color: #f1f3f4;
+        border-color: #e0e0e0;
+      }
     `
     document.head.appendChild(style)
+    
     return () => {
       document.head.removeChild(style)
     }
   }, [])
 
-  // Handle recipient selection
-  const handleRecipientSelect = useCallback(
-    (recipient: any, type: "to" | "cc") => {
-      setRecipients((prev) => ({
-        ...prev,
-        [type]: [...prev[type], recipient],
-      }))
-      toast({
-        title: "Destinatario añadido",
-        description: `${recipient.name} añadido como ${type === "to" ? "destinatario principal" : "copia"}`,
-        variant: "success",
-      })
-    },
-    [toast],
-  )
-
-  // Remove recipient
-  const handleRecipientRemove = useCallback((recipientId: string, type: "to" | "cc") => {
-    setRecipients((prev) => ({
-      ...prev,
-      [type]: prev[type].filter((r) => r.id !== recipientId),
-    }))
-  }, [])
-
-  // Handle sender selection
-  const handleSenderSelect = useCallback(
-    (selectedSender: any) => {
-      setSender(selectedSender)
-      if (selectedSender) {
-        toast({
-          title: "Remitente seleccionado",
-          description: `${selectedSender.name} seleccionado como remitente`,
-          variant: "success",
-        })
-      }
-    },
-    [toast],
-  )
-
-  // Remove sender
-  const handleSenderRemove = useCallback(() => {
-    setSender(null)
-  }, [])
-
-  // Handle attachment changes
+  // Manejar cambios en adjuntos
   const handleAttachmentsChange = useCallback((newAttachments: AttachmentFile[]) => {
     setAttachments(newAttachments)
   }, [])
 
-  // Memoize document container click handler - must be defined before any conditional returns
-  const handleDocumentContainerClick = useCallback(() => {
-    try {
-      if (editor && editor.commands && editor.commands.focus) {
-        editor.commands.focus()
+  // Manejar selección de remitentes
+  const [isSearchRecipientsModalOpen, setIsSearchRecipientsModalOpen] = useState(false)
+
+  // Handler para abrir modal de búsqueda de destinatarios
+  const handleOpenSearchRecipientsModal = useCallback(() => {
+    console.log("Opening search recipients modal")
+    setIsSearchRecipientsModalOpen(true)
+  }, [])
+
+  // Handler para cerrar modal de búsqueda de destinatarios
+  const handleCloseSearchRecipientsModal = useCallback(() => {
+    setIsSearchRecipientsModalOpen(false)
+  }, [])
+  
+  // Handler para cuando se selecciona un destinatario
+  const handleRecipientSelect = useCallback((
+    recipient: any | null,
+    type: "to" | "cc",
+    recipientId?: string
+  ) => {
+    console.log(`Recipient ${recipientId || 'new'} selected as ${type}:`, recipient)
+    
+    setRecipients(prev => {
+      // Si recipient es null, estamos eliminando un destinatario existente
+      if (recipient === null && recipientId) {
+        return {
+          ...prev,
+          [type]: prev[type].filter(r => r.id !== recipientId)
+        }
       }
+      
+      // Si el destinatario ya está en la lista, no hacer nada
+      if (prev[type].some(r => r.id === recipient.id)) {
+        return prev
+      }
+      
+      // Agregar nuevo destinatario
+      return {
+        ...prev,
+        [type]: [...prev[type], recipient]
+      }
+    })
+  }, [])
+  
+  // Handler para remover un destinatario
+  const handleRecipientRemove = useCallback((id: string, type: "to" | "cc") => {
+    setRecipients(prev => ({
+      ...prev,
+      [type]: prev[type].filter(r => r.id !== id)
+    }))
+  }, [])
+  
+  // Handler para cuando se selecciona un remitente
+  const handleSenderSelect = useCallback((sender: any | null) => {
+    setSender(sender)
+  }, [])
+  
+  // Handler para eliminar remitente
+  const handleSenderRemove = useCallback(() => {
+    setSender(null)
+  }, [])
+  
+  // Toggle expanded/contracted state
+  const toggleExpand = useCallback(() => {
+    setIsExpanded(prev => !prev)
+  }, [])
+
+  // Simplificado: Manejador de clics en el contenedor del documento 
+  // Enfoca el editor cuando se hace clic en el área editable
+  const handleDocumentContainerClick = useCallback((e) => {
+    try {
+      const target = e.target as HTMLElement;
+      
+      // Si el clic es directamente en el área de contenido editable o dentro de ella
+      if (
+        target.classList.contains('ProseMirror') || 
+        (target.closest('.ProseMirror') && 
+         !target.closest('button') &&
+         !target.closest('select') &&
+         !target.closest('input'))
+      ) {
+        if (editor && editor.commands && editor.commands.focus) {
+          editor.commands.focus();
+        }
+      }
+      
     } catch (error) {
-      console.error("Error focusing editor:", error)
-      setEditorError(`Error focusing editor: ${error instanceof Error ? error.message : String(error)}`)
+      console.error("Error in document click handler:", error);
+      setEditorError(`Error handling click: ${error instanceof Error ? error.message : String(error)}`);
     }
   }, [editor])
 
@@ -563,8 +615,10 @@ export default function DocumentEditor() {
         "w-[816px] min-h-[1056px]", // US Letter size in pixels (8.5" x 11")
         "border border-gray-200", // Lighter border
         "shadow-[0_1px_3px_rgba(60,64,67,0.15)]", // More subtle shadow like Google Docs
+        "transition-all duration-300", // Smooth transition when sidebar collapses
+        // Mantenemos el ancho fijo incluso en modo expandido para preservar el aspecto de papel
       ),
-    [],
+    [sidebarCollapsed], // Re-evaluate when sidebar state changes
   )
 
   if (!editor || isLoadingDocument) {
@@ -580,7 +634,20 @@ export default function DocumentEditor() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col h-screen bg-[#f1f3f4]">
+      <div 
+           className={cn(
+             "flex flex-col h-full w-full bg-[#f1f3f4] document-editor",
+             isExpanded && "expanded-editor"
+           )}
+           style={{ 
+             width: '100%', 
+             height: '100%', 
+             maxWidth: '100%', 
+             overflow: 'hidden',
+             position: 'relative',
+             transition: 'all 0.3s ease'
+           }}
+         >
         {editorError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-sm">
             <strong>Error:</strong> {editorError}
@@ -590,7 +657,7 @@ export default function DocumentEditor() {
           </div>
         )}
 
-        {/* Document Header with Recipients and Sender */}
+        {/* DocumentHeader - Siempre visible, pero con contenido condicional */}
         <DocumentHeader
           title={documentTitle}
           setTitle={setDocumentTitle}
@@ -603,33 +670,58 @@ export default function DocumentEditor() {
           attachments={attachments}
           onRecipientRemove={handleRecipientRemove}
           onSenderRemove={handleSenderRemove}
-          onOpenRecipientSearch={() => setIsRecipientPanelOpen(true)}
+          onOpenRecipientSearch={handleOpenSearchRecipientsModal}
           onOpenAttachmentManager={() => setIsAttachmentManagerOpen(true)}
+          onOpenPreview={handleOpenPreview}
+          isExpanded={isExpanded}
         />
 
-        {/* Enhanced Toolbar */}
+        {/* Enhanced Toolbar - Always visible */}
         <EnhancedToolbar
           editor={editor}
           onOpenAttachmentManager={() => setIsAttachmentManagerOpen(true)}
           attachmentCount={attachments.length}
+          onOpenPreview={handleOpenPreview}
+          isPreviewModalOpen={isPreviewModalOpen}
+          onClosePreview={handleClosePreview}
+          pdfLoadError={pdfLoadError}
+          setPdfLoadError={setPdfLoadError}
+          isExpanded={isExpanded}
+          onToggleExpand={toggleExpand}
         />
 
-        {/* Horizontal ruler */}
+        {/* Horizontal ruler - Siempre visible */}
         <HorizontalRuler scrollLeft={scrollPosition.x} />
 
         {/* Main content area with document and rulers */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden" style={{ position: 'relative', zIndex: 15 }}>
           <div className="relative h-full">
             {/* Document container with vertical ruler */}
-            <div ref={editorContainerRef} className="absolute inset-0 overflow-auto">
-              <div className="flex min-h-full">
-                {/* Vertical ruler */}
+            <div 
+              ref={editorContainerRef} 
+              className="absolute inset-0 overflow-auto w-full h-full"
+              style={{ position: 'relative', zIndex: 15 }}
+            >
+              <div className="flex min-h-full w-full">
+                {/* Vertical ruler - Siempre visible */}
                 <VerticalRuler scrollTop={scrollPosition.y} />
 
                 {/* Document content area with centered page */}
-                <div className="flex-1 py-4 flex justify-center">
-                  <div className={pageContainerClasses} onClick={handleDocumentContainerClick}>
-                    <EditorContent editor={editor} className="page-content p-[1in]" />
+                <div 
+                  className={cn(
+                    "flex-1 py-4 flex justify-center w-full"
+                  )} 
+                  style={{ 
+                    position: 'relative',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div className={pageContainerClasses}>
+                    <EditorContent 
+                      editor={editor} 
+                      className="page-content p-[1in]"
+                      onClick={handleDocumentContainerClick}
+                    />
                   </div>
                 </div>
               </div>
@@ -637,15 +729,28 @@ export default function DocumentEditor() {
           </div>
         </div>
 
-        {/* Recipient Search Panel */}
-        <RecipientSearchPanel
-          isOpen={isRecipientPanelOpen}
-          onClose={() => setIsRecipientPanelOpen(false)}
-          onRecipientSelect={handleRecipientSelect}
-          onSenderSelect={handleSenderSelect}
-          existingRecipients={[...recipients.to, ...recipients.cc]}
-          currentSender={sender}
-        />
+        {/* Search Recipients Modal - New implementation */}
+        {isSearchRecipientsModalOpen && portalMounted && typeof document !== 'undefined' && (
+          <SearchRecipientsModal
+            isOpen={isSearchRecipientsModalOpen}
+            onClose={handleCloseSearchRecipientsModal}
+            onRecipientSelect={handleRecipientSelect}
+            onSenderSelect={handleSenderSelect}
+            existingRecipients={[
+              // Destinatarios principales con tipo "to"
+              ...recipients.to.map(recipient => ({
+                ...recipient,
+                type: "to" as const
+              })),
+              // Destinatarios en copia con tipo "cc"
+              ...recipients.cc.map(recipient => ({
+                ...recipient,
+                type: "cc" as const
+              }))
+            ]}
+            currentSender={sender}
+          />
+        )}
 
         {/* Attachment Manager */}
         <AttachmentManager
@@ -665,8 +770,75 @@ export default function DocumentEditor() {
           ]}
         />
 
-        {/* Toast notifications */}
-        <ToastContainer toasts={toasts} dismiss={dismiss} />
+        {/* Toast notifications manejadas por Toaster global */}
+        
+        {/* Preview Modal - Using React Portal for better stacking context */}
+        {isPreviewModalOpen && portalMounted && typeof document !== 'undefined' && (
+          createPortal(
+            <div 
+              className="fixed inset-0 flex items-center justify-center bg-black/80"
+              style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 10000,
+                isolation: 'isolate' // Crear un nuevo contexto de apilamiento
+              }}
+            >
+              <div className="bg-white rounded-lg w-[90vw] h-[90vh] flex flex-col">
+                {/* Header with close button */}
+                <div className="flex justify-between items-center p-4 border-b">
+                  <h2 className="text-lg font-semibold">Vista Previa del Documento</h2>
+                  <button
+                    onClick={handleClosePreview}
+                    className="p-1 hover:bg-gray-100 rounded"
+                    title="Cerrar"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* PDF Content */}
+                <div className="flex-1 p-4">
+                  {pdfLoadError ? (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                      <AlertCircle className="h-16 w-16 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No se pudo cargar el PDF</h3>
+                      <p className="text-sm text-center mb-4">
+                        El documento de vista previa no está disponible en este momento.
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setPdfLoadError(false)
+                          // Force iframe reload
+                          const iframe = document.querySelector("#preview-iframe") as HTMLIFrameElement
+                          if (iframe) {
+                            iframe.src = iframe.src
+                          }
+                        }}
+                      >
+                        Intentar de nuevo
+                      </Button>
+                    </div>
+                  ) : (
+                    <iframe
+                      id="preview-iframe"
+                      src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
+                      className="w-full h-full border rounded"
+                      title="Vista Previa PDF"
+                      onError={() => setPdfLoadError(true)}
+                      onLoad={() => setPdfLoadError(false)}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        )}
       </div>
     </ErrorBoundary>
   )

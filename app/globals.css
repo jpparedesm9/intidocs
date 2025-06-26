@@ -30,7 +30,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 220 13% 50%; /* Cambiado a un valor neutral que no se usará */
 
     --radius: 0.5rem;
 
@@ -113,6 +113,9 @@ input[type="checkbox"] {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+  pointer-events: auto !important;
 }
 
 input[type="checkbox"]:checked {
@@ -140,6 +143,26 @@ input[type="checkbox"]:hover {
 .horizontal-ruler-container,
 .vertical-ruler {
   z-index: 10;
+}
+
+/* Ensure editor content can receive pointer events */
+.document-editor,
+.page-container,
+.page-content,
+.ProseMirror {
+  pointer-events: auto !important;
+}
+
+/* Force higher z-index for the editor to ensure it's above other elements */
+.document-editor .ProseMirror {
+  position: relative !important;
+  z-index: 30 !important;
+}
+
+/* Ensure the editor container receives events */
+.editor-content {
+  position: relative !important;
+  z-index: 25 !important;
 }
 
 /* Gmail sidebar styles */
@@ -185,6 +208,9 @@ input[type="checkbox"]:hover {
   width: 100%;
   padding-right: 0;
   @apply flex items-center px-4 py-2 border-b hover:bg-gray-100 cursor-pointer;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto !important;
 }
 
 .email-item-selected {
@@ -313,4 +339,693 @@ input[type="checkbox"]:hover {
   max-width: 100%;
   padding-right: 0;
   margin-right: 0;
+}
+
+/* Sidebar transition styles */
+.sidebar-collapsed .page-container {
+  max-width: calc(100vw - 4rem);
+  transition: max-width 0.3s ease, width 0.3s ease, transform 0.3s ease;
+}
+
+/* Make the dynamic content occupy all available space immediately */
+.dynamic-content-container {
+  transition: all 0.3s ease;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Editor container - make it responsive to sidebar state */
+.editor-content-container {
+  transition: all 0.3s ease;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#dynamic-content-container {
+  transition: all 0.3s ease-in-out !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+}
+
+/* Force document editor to take full width */
+.document-editor {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Menu button styles to ensure full width */
+.sidebar-menu-button {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  border-radius: 6px !important;
+}
+
+/* Override the SidebarMenuButton styles for full width */
+[data-sidebar="menu-button"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  justify-content: flex-start !important;
+}
+
+/* Make sure the menu button background extends full width */
+[data-active=true] {
+  width: 100% !important;
+  display: flex !important;
+  border-radius: 6px !important;
+}
+
+/* Fix hover styles for menu items to extend full width */
+.hover\:bg-gray-700:hover {
+  border-radius: 6px !important;
+  width: 100% !important;
+  display: flex !important;
+}
+
+/* Apply these styles to all sidebar menu items */
+.bg-blue-600 {
+  border-radius: 6px !important;
+  width: 100% !important;
+  display: flex !important;
+}
+
+/* Fix the position of the sidebar collapse button */
+.sidebar-collapse-button {
+  position: fixed !important;
+  z-index: 50 !important;
+}
+
+/* Ensure the Nuevo Documento button is always visible and properly contained */
+.compose-button {
+  z-index: 30 !important;
+  position: relative !important;
+  display: inline-flex !important;
+  width: auto !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Fix the button container in the sidebar */
+#sidebar-container .compose-button {
+  width: auto !important;
+  display: inline-flex !important;
+}
+
+/* Ensure the button doesn't overflow */
+#sidebar-container button {
+  width: auto !important;
+  overflow: hidden !important;
+}
+
+/* Style for the compose button container */
+.compose-button-container {
+  display: inline-block !important;
+  width: auto !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Adjust the sidebar header to ensure the compose button is contained */
+[data-sidebar="header"] {
+  padding: 8px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 20 !important;
+  overflow: visible !important;
+  display: block !important;
+  margin-top: 0 !important;
+}
+
+/* Fix the sidebar layout */
+#sidebar-container {
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 15 !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+}
+
+/* Make sure the width of the sidebar is strictly respected */
+#sidebar-container > * {
+  max-width: 100% !important;
+  width: auto !important;
+  overflow: hidden !important;
+}
+
+/* Make sure the sidebar doesn't expand */
+#sidebar-container [data-sidebar="sidebar"] {
+  width: auto !important;
+  overflow: hidden !important;
+  max-width: 100% !important;
+}
+
+/* Adjust main content to ensure proper spacing */
+#main-layout-container {
+  margin-top: 3.5rem !important; /* 56px - matches the top bar height */
+  padding-top: 0 !important;
+  height: calc(100vh - 3.5rem) !important;
+}
+
+/* Ensure collapsed sidebar menu items are properly centered */
+.collapsed-menu-item {
+  justify-content: center !important;
+  padding: 0.5rem !important;
+  width: auto !important;
+}
+
+/* Fix sidebar menu items in collapsed state */
+[data-sidebar="menu-button"][data-size="default"] {
+  height: auto !important;
+  min-height: 2rem !important;
+  width: 100% !important;
+}
+
+/* Ensure SidebarMenuItem takes full width */
+[data-sidebar="menu-item"] {
+  width: 100% !important;
+  display: block !important;
+}
+
+/* Ensure SidebarMenu takes full width */
+[data-sidebar="menu"] {
+  width: 100% !important;
+}
+
+/* Force all menu buttons to take full width */
+#sidebar-container [data-sidebar="menu-button"] {
+  width: 100% !important;
+  display: flex !important;
+}
+
+/* Make sure menu hover state takes full width */
+#sidebar-container [data-sidebar="menu-button"]:hover {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 6px !important;
+}
+
+/* Make sure selected menu items take full width */
+#sidebar-container [data-sidebar="menu-button"][data-active="true"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  background-color: transparent !important; /* Remove background color */
+}
+
+/* Configuración base de z-index para elementos de Radix UI */
+[data-radix-popper-content-wrapper] {
+  z-index: 1000 !important; /* Valor consistente para todos los elementos */
+}
+
+/* Asegurar que los portales siempre estén por encima sin afectar la funcionalidad */
+[data-radix-portal] {
+  z-index: 1000 !important; /* Mismo valor que el wrapper */
+}
+
+/* Garantizar que los popover y selectores se muestren correctamente */
+.popover-content,
+.color-picker-content,
+.dropdown-content,
+.select-content,
+[data-state="open"] {
+  z-index: 1000 !important; /* Mantener consistencia de z-index */
+}
+
+/* Ensure proper stacking context for all editor UI components - less aggressive */
+.document-editor button,
+.document-editor input,
+.document-editor [data-radix-select-trigger],
+.document-editor [data-radix-dropdown-menu-trigger],
+.document-editor [data-radix-popover-trigger] {
+  position: relative;
+  z-index: 20;
+}
+
+/* Ensure all combobox options appear correctly */
+[role="listbox"],
+[role="menu"] {
+  z-index: 1000 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Fix floating elements positioning */
+.floating-ui-select,
+.floating-ui-dropdown,
+.floating-ui-popover {
+  z-index: 1000 !important;
+}
+
+/* Asegurar que los eventos de clic funcionen correctamente */
+.document-editor button,
+.document-editor [role="button"],
+.document-editor input,
+.document-editor select,
+.document-editor a,
+.document-editor label,
+.document-editor [tabindex="0"],
+.document-editor .ProseMirror,
+.email-item,
+.email-item *,
+div[onClick],
+[role="checkbox"],
+input[type="checkbox"] + label,
+input[type="checkbox"] + * {
+  pointer-events: auto !important;
+}
+
+/* Better tooltips implementation */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-container:hover .tooltip {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  margin-left: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+}
+
+/* Ensure content respects top bar */
+.content-below-topbar {
+  margin-top: 3.5rem !important;
+  padding-top: 0 !important;
+  height: calc(100vh - 3.5rem) !important;
+  position: relative !important;
+}
+
+/* Ensure all content containers take full width */
+.w-full {
+  width: 100% !important;
+}
+
+/* Add debugging outline to see container boundaries */
+#dynamic-content-container > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Document content area */
+.page-content {
+  transition: all 0.3s ease;
+}
+
+/* Main container adjustments */
+.flex-col.h-screen.w-full {
+  transition: all 0.3s ease;
+}
+
+/* Document container with responsive width */
+.document-container {
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.sidebar-collapsed .document-container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Improve page rendering during transitions */
+* {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Style for the top bar hamburger menu button */
+.top-bar-menu-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s !important;
+}
+
+.top-bar-menu-button:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Configuración básica para menús desplegables */
+[data-radix-popper-content-wrapper] {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+
+/* Asegurar que los elementos del portal son interactivos */
+body > [role="menu"],
+body > [role="listbox"],
+body > [role="dialog"],
+body > [role="combobox"],
+body > [data-radix-portal] {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure all buttons and interactive elements can be clicked */
+button, 
+[role="button"],
+input[type="checkbox"],
+div[onClick],
+.cursor-pointer {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 5;
+}
+
+/* Asegurar que los elementos de trámites y bandejas funcionen correctamente */
+div[class*="cursor-pointer"],
+div[class*="hover:bg-gray-100"] {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Make dropdown and popover content always visible and fixed in place */
+.dropdown-content, 
+.popover-content,
+[data-state="open"] {
+  z-index: 999 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  animation: none !important;
+  transition: opacity 0.1s ease !important;
+}
+
+/* Fix positioning of popover content to prevent movement */
+.dropdown-content, 
+.popover-content,
+[data-radix-popper-content-wrapper] {
+  z-index: 9999;
+  /* Allow Radix to handle positioning without overrides */
+}
+
+/* Fix ComboBox and Select positioning */
+.SelectContent,
+.DropdownMenuContent,
+[data-radix-select-content],
+[data-radix-dropdown-menu-content] {
+  z-index: 9999;
+  /* Allow Radix UI to handle positioning properly */
+}
+
+/* Fix for editor UI elements and interactivity */
+/* Permitir eventos de puntero en elementos generales del editor */
+.document-editor .page-container,
+.document-editor .ProseMirror {
+  pointer-events: auto;
+}
+
+/* Let inputs and interactive elements be clickable */
+.document-editor button,
+.document-editor [role="button"],
+.document-editor input,
+.document-editor select,
+.document-editor [data-radix-select-trigger],
+.document-editor .SelectTrigger,
+.document-editor [data-state],
+.document-editor [aria-haspopup],
+.document-editor [aria-controls],
+.document-editor [role="combobox"],
+.document-editor [data-placeholder] {
+  position: relative;
+}
+
+/* Eliminar resaltado de focus para inputs y selects dentro del documento */
+.document-editor input:focus,
+.document-editor input:focus-visible,
+.document-editor select:focus,
+.document-editor select:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: 0 !important;
+  ring-offset: 0 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Ensure labels remain visible when their corresponding inputs/selects are focused or active */
+label:has(+ input:focus),
+label:has(+ div input:focus),
+label:has(+ select:focus),
+label:has(+ [data-radix-select-trigger]:focus),
+label:has(+ [data-radix-select-trigger][data-state="open"]) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Ensure select triggers and labels remain visible when dropdown is open */
+[data-radix-select-trigger][data-state="open"],
+[data-radix-select-trigger]:focus-within {
+  border-color: #3b82f6 !important;
+}
+
+/* Ensure combobox options remain visible and interactive */
+[role="combobox"][aria-expanded="true"],
+[role="listbox"],
+[data-radix-select-content] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Radix Select enhancements - Simplified approach */
+/* Portal positioning - allow proper positioning behavior */
+body > [data-radix-portal] > * {
+  z-index: 9999 !important;
+}
+
+/* Critical components that must always be interactive */
+[data-radix-select-viewport],
+[data-radix-select-content],
+[data-radix-select-item],
+[data-radix-select-trigger] {
+  z-index: 10 !important;
+}
+
+/* Ensure proper positioning of select content */
+[data-radix-select-content][data-state="open"],
+[data-radix-dropdown-menu-content][data-state="open"] {
+  z-index: 9999 !important;
+}
+
+/* Reset any fixed positioning that might cause dropdown to appear in wrong location */
+[data-radix-popper-content-wrapper] [data-radix-select-content],
+[data-radix-popper-content-wrapper] [data-radix-dropdown-menu-content] {
+  position: relative !important;
+}
+
+/* Ensure all form controls with labels maintain proper positioning */
+div:has(label) input,
+div:has(label) select,
+div:has(label) [data-radix-select-trigger] {
+  margin-top: 0.5rem !important;
+}
+
+/* Fix for labels disappearing when comboboxes or selects are clicked */
+.form-group,
+.form-field,
+.form-item {
+  position: relative;
+}
+
+/* Make label siblings of form controls persist even when control is focused */
+.form-group label,
+.form-field label,
+.form-item label,
+div:has(> input) label,
+div:has(> select) label,
+div:has(> [data-radix-select-trigger]) label {
+  transition: all 0.2s ease;
+  display: block !important;
+}
+
+/* Fix for when selects are clicked and labels disappear */
+div:has(> [data-radix-select-trigger][data-state="open"]) label,
+div:has(> [data-radix-select-trigger]:focus) label,
+div:has(> [role="combobox"]) label,
+div:has(> [role="combobox"][aria-expanded="true"]) label {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Ensure comboboxes and selects have proper z-index and stacking */
+[data-radix-select-trigger],
+[role="combobox"] {
+  position: relative;
+  z-index: 20;
+}
+
+/* Ensure labels remain visible when container has focus-within state */
+div[data-focus-within] label,
+div:has(> [data-radix-select-trigger][data-state="open"]) label {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  color: #3b82f6 !important; /* Blue color to indicate focus state */
+}
+
+/* Form styles to fix label visibility */
+.space-y-2, .space-y-4, .form-group, .form-field {
+  position: relative !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Maintain consistent positioning for form controls */
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger],
+.SelectTrigger {
+  position: relative !important;
+  display: flex !important;
+  width: 100% !important; /* Maintain width */
+  transition: border-color 0.2s ease !important;
+}
+
+/* Ensure inputs and selects have consistent positioning */
+input,
+select,
+textarea {
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* Fix for any form elements with labels */
+div:has(> label + input),
+div:has(> label + select),
+div:has(> label + [data-radix-select-trigger]),
+div:has(> label + [data-radix-dropdown-menu-trigger]) {
+  position: relative !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Custom scrollbar styles - improved */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(74, 85, 104, 0.5);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(113, 128, 150, 0.7);
+}
+
+/* Better visual feedback for menu items */
+.sidebar-menu-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu-button:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: width 0.2s ease;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.sidebar-menu-button:hover:after {
+  width: 100%;
+}
+
+/* Badges in sidebar */
+.sidebar-badge {
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: rgba(66, 153, 225, 0.2);
+  color: rgba(186, 230, 253, 0.9);
+  margin-left: auto;
+}
+
+/* Simple editor styles that won't interfere with functionality */
+.ProseMirror {
+  cursor: text;
+  outline: none;
+}
+
+/* Make document editor visible but don't override default behaviors */
+.document-editor {
+  position: relative;
+}
+
+/* Fix para ComboBox que se mueven al interactuar */
+[data-radix-select-content],
+[data-radix-dropdown-menu-content],
+[role="listbox"],
+[role="menu"] {
+  z-index: 9999;
+  /* Remove transform and position overrides to let Radix handle positioning */
+}
+
+/* Overrides for select/combobox container to prevent layout shifts */
+div:has(> [data-radix-select-trigger]),
+div:has(> [data-radix-dropdown-menu-trigger]) {
+  height: auto !important;
+  position: relative !important;
+  display: block !important;
+  transform: none !important;
+}
+
+/* Asegurar que el trigger no se mueva */
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger] {
+  position: relative !important;
+  display: flex !important;
+  width: 100% !important;
+  transform: none !important;
+  transition: border-color 0.2s ease !important;
+}
+
+/* Style for page container */
+.page-container {
+  position: relative;
 }

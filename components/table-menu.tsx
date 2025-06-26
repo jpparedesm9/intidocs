@@ -227,7 +227,13 @@ const TableMenu = memo(function TableMenu({ editor }: TableMenuProps) {
             <TableIcon className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent 
+          className="w-auto p-0" 
+          align="start" 
+          sideOffset={5}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           {!isTableSelected ? (
             <div className="p-2">
               <div className="text-sm font-medium mb-2 px-2 pt-2">Insert Table</div>
@@ -313,7 +319,15 @@ const TableMenu = memo(function TableMenu({ editor }: TableMenuProps) {
                     Cell background
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent ref={colorPickerRef} className="w-auto p-2" align="start">
+                <PopoverContent 
+                  ref={colorPickerRef} 
+                  className="w-auto p-2" 
+                  align="start"
+                  side="right"
+                  sideOffset={5}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  onPointerDownOutside={(e) => e.preventDefault()}
+                >
                   <div className="grid grid-cols-5 gap-1">
                     {colors.map((color) => (
                       <button

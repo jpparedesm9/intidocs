@@ -1,0 +1,93 @@
+/* Fix para problemas con el sidebar y checkboxes */
+
+/* Habilitar eventos de puntero para todos los elementos del sidebar sin modificar posición*/
+#sidebar-container,
+#sidebar-container *,
+[data-sidebar],
+[data-sidebar] *,
+.sidebar-menu-button,
+.sidebar-menu-button * {
+  pointer-events: auto !important;
+}
+
+/* Estilos específicos para los menús laterales de Trámites y Bandejas */
+[data-sidebar="menu"],
+[data-sidebar="menu-item"],
+[data-sidebar="menu-button"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Arreglar los checkboxes que se muestran extraño */
+input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  height: 16px !important;
+  width: 16px !important;
+  border: 1px solid #dadce0 !important;
+  border-radius: 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: white !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #1a73e8 !important;
+  border-color: #1a73e8 !important;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "" !important;
+  display: block !important;
+  width: 4px !important;
+  height: 8px !important;
+  border: solid white !important;
+  border-width: 0 2px 2px 0 !important;
+  transform: rotate(45deg) !important;
+  margin-bottom: 2px !important;
+}
+
+input[type="checkbox"]:hover {
+  border-color: #1a73e8 !important;
+  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2) !important;
+}
+
+/* Hacer que los elementos clicables funcionen correctamente */
+.cursor-pointer,
+div[class*="cursor-pointer"],
+div[onclick],
+div[onClick],
+.hover\:bg-gray-100,
+div[class*="hover:bg-gray-100"] {
+  pointer-events: auto !important;
+}
+
+/* Asegurar que los eventos de clic funcionen en las secciones de Trámites y Bandejas */
+div[onclick*="toggleSection"],
+div[onClick*="toggleSection"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Asegurar que los elementos SidebarMenuButton funcionen correctamente */
+button[data-active],
+[data-sidebar="menu-button"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Corregir el comportamiento de los dropdown y combobox */
+[data-radix-popper-content-wrapper] {
+  pointer-events: auto !important;
+}
+
+/* Permitir eventos de puntero en todos los portales */
+[data-radix-portal],
+[data-radix-portal] * {
+  pointer-events: auto !important;
+}

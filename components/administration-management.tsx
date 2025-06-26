@@ -42,6 +42,15 @@ interface Tramite {
 }
 
 export function AdministrationManagement() {
+  // Establecer estilo para garantizar interactividad
+  const containerStyle = {
+    position: 'relative' as const,
+    pointerEvents: 'auto' as const,
+    height: '100%',
+    width: '100%',
+    zIndex: 10,
+    overflow: 'auto'
+  };
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTramites, setSelectedTramites] = useState<string[]>([])
   const [selectedTramiteId, setSelectedTramiteId] = useState<string | null>(null)
@@ -200,7 +209,9 @@ export function AdministrationManagement() {
   const estados = ["Todos", "Pendiente", "En Proceso", "En Revisión", "Aprobado", "Rechazado", "Finalizado"]
 
   return (
-    <div className="flex flex-1 overflow-hidden w-full max-w-full">
+    <div 
+      className="flex flex-1 overflow-hidden w-full max-w-full"
+      style={containerStyle}>
       {/* Main Tramite List */}
       <div
         className={`flex-1 flex flex-col overflow-hidden ${

@@ -1,0 +1,163 @@
+/* 
+   Targeted fix for interactive components based on document-editor implementation
+   This approach is more targeted and avoids global overrides that might conflict
+*/
+
+/* Reset the overly aggressive pointer-events: auto override in full-fix.css */
+* {
+  pointer-events: initial;
+}
+
+/* IMPORTANTE: Evitamos interferir con los componentes flotantes de Radix UI */
+body > [data-radix-portal],
+body > [data-radix-popper-content-wrapper] {
+  /* Evitamos alterar las propiedades esenciales que Radix usa para posicionar */
+  pointer-events: auto !important; /* Solo aseguramos que sean interactivos */
+}
+
+/* Core container styles to match document-editor pattern */
+#dynamic-content-container,
+.task-management,
+.tracking-management,
+.administration-management,
+.dashboard-view,
+.gmail-main-content,
+.document-send,
+.document-history,
+.empty-content {
+  position: relative !important;
+  z-index: 15 !important;
+  height: 100% !important;
+  width: 100% !important;
+  overflow: auto !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure all interactive elements within components can receive events */
+button,
+input,
+select,
+a,
+[role="button"],
+[role="checkbox"],
+[role="listbox"],
+[role="combobox"],
+[role="menu"],
+[role="menuitem"],
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger],
+.cursor-pointer,
+div[onClick],
+div[onclick],
+.sidebar-menu-button,
+.email-item {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Fix for Radix UI components and their containers - SOLO pointer-events */
+[data-radix-select-content],
+[data-radix-dropdown-menu-content],
+[role="dialog"],
+[role="listbox"],
+[role="menu"] {
+  pointer-events: auto !important;
+}
+
+/* Specific fix for dropdown triggers - aseguramos que sean interactivos */
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger],
+[role="combobox"] {
+  pointer-events: auto !important;
+}
+
+/* Fix specifically for checkboxes that may be losing events */
+input[type="checkbox"] {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Target specific containers like the ones in TaskManagement */
+.task-management > div,
+.tracking-management > div,
+.administration-management > div {
+  position: relative !important;
+  pointer-events: auto !important;
+}
+
+/* Fix the containers that hold tasks and items lists */
+.flex-1.flex.flex-col.overflow-hidden,
+.flex-1.overflow-auto,
+.task-management .overflow-auto {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Target the specific task items in task management */
+.task-management .cursor-pointer,
+.task-management div[onClick],
+.task-management .flex.items-center.px-4.py-2.border-b.hover\:bg-gray-100 {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure hover styles work */
+.hover\:bg-gray-100:hover {
+  background-color: rgba(243, 244, 246, 1) !important;
+}
+
+/* Critical fix for checkboxes in task lists */
+input[type="checkbox"] {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  position: relative !important;
+  z-index: 20 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Fix for select and input elements in non-editor components */
+select, 
+input[type="text"], 
+input[type="email"], 
+input[type="password"] {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure button clicks work */
+button, 
+[role="button"], 
+.cursor-pointer {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+/* Excepciones para el editor: evitamos sobrescribir sus estilos */
+.document-editor,
+.document-editor .page-container,
+.document-editor .page-content,
+.document-editor .ProseMirror,
+.document-editor [data-radix-popper-content-wrapper],
+.document-editor [data-radix-portal],
+.document-editor [data-state="open"],
+.document-editor [data-radix-select-content],
+.document-editor [data-radix-dropdown-menu-content] {
+  /* Solo aplicamos pointer-events y preservamos las propiedades originales */
+  pointer-events: auto !important;
+  /* Eliminamos position para no afectar componentes flotantes */
+}
+
+/* Fix for modal dialogs and panels that need to appear on top */
+[role="dialog"],
+.md\:w-1\/2.lg\:w-1\/2.bg-white.border-l.border-gray-200.h-screen.flex-shrink-0.flex.flex-col {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+}

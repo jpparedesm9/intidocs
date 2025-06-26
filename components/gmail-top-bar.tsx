@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Settings, HelpCircle, Menu, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,9 +17,28 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/hooks/use-auth"
 
-export function GmailTopBar() {
+interface GmailTopBarProps {
+  toggleSidebar: () => void;
+  sidebarCollapsed: boolean;
+}
+
+export function GmailTopBar({ toggleSidebar, sidebarCollapsed }: GmailTopBarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const { user, logout } = useAuth()
+  const { 
+    user, 
+    logout, 
+    userProfiles, 
+    activeProfile, 
+    setActiveProfile, 
+    loadUserProfiles 
+  } = useAuth()
+
+  // Load profiles when component mounts, only once if no profiles exist
+  useEffect(() => {
+    if (user && userProfiles.length === 0) {
+      loadUserProfiles()
+    }
+  }, [user, userProfiles.length, loadUserProfiles])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,23 +55,44 @@ export function GmailTopBar() {
       .slice(0, 2)
   }
 
+  const handleProfileSelect = (profile: any) => {
+    setActiveProfile(profile)
+  }
+
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200 h-14 fixed top-0 left-0 right-0 z-20">
-      {/* Left section */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">SGD</span>
-          </div>
-          <span className="font-semibold text-gray-900 hidden sm:block">Sistema de Gestión Documental</span>
+    <div className="flex items-center justify-between px-0 py-2 bg-white border-b border-gray-200 h-14 fixed top-0 left-0 right-0 z-20">
+      {/* Left section - Logo placeholder que se contrae con el menú */}
+      <div className="flex items-center" style={{ 
+          width: sidebarCollapsed ? '4rem' : '16rem',
+          transition: 'width 0.3s ease-in-out',
+          borderRight: '1px solid #e5e7eb'
+        }}>
+        {/* Logo placeholder - contraído o expandido según el estado del menú */}
+        <div className="h-8 flex items-center justify-center w-full">
+          {sidebarCollapsed ? (
+            <div className="text-lg font-bold text-gray-700">LG</div>
+          ) : (
+            <div className="text-lg font-semibold text-gray-700 pl-4">LOGO</div>
+          )}
         </div>
       </div>
+      
+      {/* Hamburger menu - ahora inmediatamente después del logo */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent event bubbling
+          toggleSidebar();
+        }} 
+        className="top-bar-menu-button"
+        title={sidebarCollapsed ? "Expandir menú lateral" : "Contraer menú lateral"}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
 
-      {/* Center section - Search */}
-      <div className="flex-1 max-w-2xl mx-4">
+      {/* Center section - Search - ajustado para considerar el nuevo espacio */}
+      <div className="flex-1 max-w-2xl ml-2">
         <form onSubmit={handleSearch} className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
@@ -63,52 +103,6 @@ export function GmailTopBar() {
             className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 focus:bg-white focus:ring-2 focus:ring-blue-500"
           />
         </form>
-      </div>
-
-      {/* Right section */}
-      <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
-          <Settings className="h-5 w-5" />
-        </Button>
-
-        {/* User menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" alt={user?.fullName || ""} />
-                <AvatarFallback className="bg-blue-600 text-white">
-                  {user?.fullName ? getInitials(user.fullName) : "U"}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.fullName}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>Perfil</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Configuración</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-red-600">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Cerrar Sesión</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   )
