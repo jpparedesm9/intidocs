@@ -27,6 +27,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { IprusReportDialog } from "./iprus-report-dialog"
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "lucide-react"
@@ -529,9 +531,10 @@ export function TaskManagement(): JSX.Element {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const { toast } = useToast()
   const [showDetailPanel, setShowDetailPanel] = useState(false)
-  const [cumpliendoRequisitos, setCumpliendoRequisitos] = useState<'si' | 'no' | null>(null)
+  // Removed cumpliendoRequisitos state as it's no longer needed
   const [isIprusModalOpen, setIsIprusModalOpen] = useState(false)
-  const [isTaskStarted, setIsTaskStarted] = useState(false)
+  // Removed isTaskStarted state as it's no longer needed
+  const [tipoObservaciones, setTipoObservaciones] = useState<'Menores' | 'Mayores' | 'Ninguna' | null>(null)
   
   // Sorting state
   const [sortField, setSortField] = useState<'id' | 'title' | 'solicitante' | 'asignadoA' | 'fechaVencimiento' | 'status' | 'priority'>('id')
@@ -594,15 +597,15 @@ export function TaskManagement(): JSX.Element {
         return <FileText className="h-4 w-4 text-red-500" />
       case "word":
       case "docx":
-        return <FileText className="h-4 w-4 text-blue-500" />
+        return <FileText className="h-4 w-4 text-brand-dark-blue" />
       case "excel":
       case "xlsx":
       case "csv":
-        return <FileText className="h-4 w-4 text-green-500" />
+        return <FileText className="h-4 w-4 text-brand-green" />
       case "image":
       case "jpg":
       case "png":
-        return <FileImage className="h-4 w-4 text-purple-500" />
+        return <FileImage className="h-4 w-4 text-brand-medium-blue" />
       default:
         return <File className="h-4 w-4 text-gray-500" />
     }
@@ -1026,114 +1029,31 @@ export function TaskManagement(): JSX.Element {
             <div className="flex items-center px-4 py-2 bg-gray-100 text-xs font-medium text-gray-700 border-y sticky top-0 z-10">
               <div className="flex items-center mr-2 flex-shrink-0 w-4"></div>
               <div 
-                className="w-[80px] min-w-[80px] flex items-center cursor-pointer hover:text-brand-green group"
+                className="w-[120px] min-w-[120px] flex items-center cursor-pointer hover:text-brand-green group"
                 onClick={() => toggleSort('id')}
               >
-                <span className="font-semibold">ID</span>
+                <span className="font-semibold">N° Trámite</span>
                 {getSortIcon('id')}
               </div>
               <div 
-                className="flex-1 min-w-0 cursor-pointer hover:text-blue-700 group flex items-center"
+                className="flex-1 min-w-0 cursor-pointer hover:text-brand-green group flex items-center"
                 onClick={() => toggleSort('title')}
               >
                 <span className="font-semibold">Título</span>
                 {getSortIcon('title')}
               </div>
               <div 
-                className="w-[180px] min-w-[120px] max-w-[200px] truncate mr-2 md:flex hidden items-center cursor-pointer hover:text-blue-700 group"
+                className="w-[200px] min-w-[160px] max-w-[250px] truncate mr-2 flex items-center cursor-pointer hover:text-brand-green group"
                 onClick={() => toggleSort('solicitante')}
               >
-                <span className="font-semibold">Solicitante</span>
+                <span className="font-semibold">Propietario</span>
                 {getSortIcon('solicitante')}
-              </div>
-              <div 
-                className="w-[120px] min-w-[120px] truncate mr-2 md:flex hidden items-center cursor-pointer hover:text-blue-700 group"
-                onClick={() => toggleSort('asignadoA')}
-              >
-                <span className="font-semibold">Asignado a</span>
-                {getSortIcon('asignadoA')}
-              </div>
-              <div 
-                className="w-[100px] lg:w-[120px] text-right flex-shrink-0 cursor-pointer hover:text-blue-700 group flex items-center justify-end"
-                onClick={() => toggleSort('fechaVencimiento')}
-              >
-                <span className="font-semibold">Due date</span>
-                {getSortIcon('fechaVencimiento')}
-              </div>
-              <div 
-                className="w-[100px] text-right flex-shrink-0 ml-2 cursor-pointer hover:text-blue-700 group flex items-center justify-end"
-                onClick={() => toggleSort('status')}
-              >
-                <span className="font-semibold">Status</span>
-                {getSortIcon('status')}
-              </div>
-              <div 
-                className="w-[80px] text-right flex-shrink-0 ml-2 cursor-pointer hover:text-blue-700 lg:flex hidden items-center justify-end"
-                onClick={() => toggleSort('priority')}
-              >
-                <span className="font-semibold">Prioridad</span>
-                {getSortIcon('priority')}
               </div>
             </div>
             {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            ) : (
-              <div className="grid grid-cols-7 gap-2 text-sm font-medium text-gray-500 bg-gray-50 p-2 rounded">
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('id')}
-                >
-                  ID
-                  {getSortIcon('id')}
-                </div>
-                <div 
-                  className="flex-1 min-w-0 cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('title')}
-                >
-                  Título
-                  {getSortIcon('title')}
-                </div>
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('solicitante')}
-                >
-                  Solicitante
-                  {getSortIcon('solicitante')}
-                </div>
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('asignadoA')}
-                >
-                  Asignado A
-                  {getSortIcon('asignadoA')}
-                </div>
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('fechaVencimiento')}
-                >
-                  Fecha Vencimiento
-                  {getSortIcon('fechaVencimiento')}
-                </div>
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('status')}
-                >
-                  Estado
-                  {getSortIcon('status')}
-                </div>
-                <div 
-                  className="cursor-pointer hover:text-blue-700 group flex items-center"
-                  onClick={() => toggleSort('priority')}
-                >
-                  Prioridad
-                  {getSortIcon('priority')}
-                </div>
-              </div>
-            )}
-            {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-3"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green mx-auto mb-3"></div>
                   <p className="text-gray-500">Cargando tareas...</p>
                 </div>
               </div>
@@ -1155,7 +1075,7 @@ export function TaskManagement(): JSX.Element {
                     </Button>
                     <Button 
                       variant="default" 
-                      className="flex items-center bg-blue-600 hover:bg-blue-700" 
+                      className="flex items-center bg-brand-green hover:bg-green-700" 
                       onClick={fetchTareasPendientes}
                     >
                       <Search className="h-4 w-4 mr-2" />
@@ -1176,9 +1096,9 @@ export function TaskManagement(): JSX.Element {
                 <div
                   key={task.id}
                   className={`flex items-center px-4 py-2 border-b hover:bg-gray-100 cursor-pointer w-full max-w-full ${
-                    selectedTasks.includes(task.id) ? "bg-blue-50" : ""
+                    selectedTasks.includes(task.id) ? "bg-green-50" : ""
                   } ${task.status === "completada" ? "opacity-70" : ""} ${
-                    selectedTaskId === task.id ? "bg-indigo-50 border-l-4 border-l-indigo-500" : ""
+                    selectedTaskId === task.id ? "bg-brand-yellow/10 border-l-4 border-l-brand-yellow" : ""
                   }`}
                   onClick={() => handleTaskClick(task.id)}
                 >
@@ -1190,7 +1110,7 @@ export function TaskManagement(): JSX.Element {
                       onChange={(e) => handleSelectTask(task.id, e as unknown as React.MouseEvent)}
                     />
                   </div>
-                  <div className="w-[80px] min-w-[80px] text-gray-800 mr-2">{task.id}</div>
+                  <div className="w-[120px] min-w-[120px] text-gray-800 mr-2">{task.id}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center">
                       <div className="truncate flex-1">
@@ -1202,17 +1122,9 @@ export function TaskManagement(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                  <div className="w-[180px] min-w-[120px] max-w-[200px] truncate text-gray-800 mr-2 md:block hidden">
+                  <div className="w-[200px] min-w-[160px] max-w-[250px] truncate text-gray-800 mr-2">
                     {task.details.solicitante}
                   </div>
-                  <div className="w-[120px] min-w-[120px] truncate text-gray-800 mr-2 md:block hidden">
-                    {task.details.asignadoA}
-                  </div>
-                  <div className="w-[100px] lg:w-[120px] text-right text-xs text-gray-500 flex-shrink-0">
-                    {task.details.fechaVencimiento}
-                  </div>
-                  <div className="w-[100px] text-right flex-shrink-0 ml-2">{getStatusBadge(task.status)}</div>
-                  <div className="w-[80px] text-right flex-shrink-0 ml-2 lg:flex hidden">{getPriorityBadge(task.priority)}</div>
                 </div>
               ))
             )}
@@ -1289,26 +1201,16 @@ export function TaskManagement(): JSX.Element {
 
           <div className="overflow-y-auto flex-1" style={{ height: "calc(100vh - 60px)" }}>
             <div className="p-6 pb-32 max-w-3xl mx-auto">
-              {/* Encabezado con título y botón de Empezar */}
-              <div className="flex justify-between items-center mb-8">
+              {/* Encabezado */}
+              <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-800">Detalle del trámite</h1>
-                <Button
-                  size="lg"
-                  className={`${isTaskStarted 
-                    ? "bg-gray-400 hover:bg-gray-500" 
-                    : "bg-blue-600 hover:bg-blue-700"} text-white rounded-full shadow-md px-6`}
-                  onClick={() => setIsTaskStarted(true)}
-                  disabled={isTaskStarted}
-                >
-                  {isTaskStarted ? "Tarea iniciada" : "Empezar"}
-                </Button>
               </div>
 
               {/* Sección: Propietario */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-6">
                 {isLoading ? (
                   <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div>
                     <span className="ml-3 text-gray-600">Cargando detalles del trámite...</span>
                   </div>
                 ) : loadError ? (
@@ -1337,7 +1239,7 @@ export function TaskManagement(): JSX.Element {
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="flex items-center bg-blue-600 hover:bg-blue-700" 
+                          className="flex items-center bg-brand-green hover:bg-green-700" 
                           onClick={() => {
                             if (selectedTaskId) {
                               const tarea = tareasPendientes.find(t => t.tramite.trmId.toString() === selectedTaskId);
@@ -1391,8 +1293,8 @@ export function TaskManagement(): JSX.Element {
                 ) : (
                   <>
                     <div className="flex items-center mb-4">
-                      <div className="bg-blue-500 rounded-full h-4 w-4 mr-2"></div>
-                      <h2 className="text-xl font-semibold text-gray-800">Propietario</h2>
+                      <div className="bg-brand-green rounded-full h-4 w-4 mr-2"></div>
+                      <h2 className="text-xl font-semibold text-brand-dark-blue">Propietario</h2>
                       {tramiteData && (
                         <span className="ml-auto text-gray-500 text-sm">Trámite #{tramiteData.data.tramite.trmId}</span>
                       )}
@@ -1484,7 +1386,7 @@ export function TaskManagement(): JSX.Element {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-6">
                 {isLoading ? (
                   <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div>
                     <span className="ml-3 text-gray-600">Cargando datos del predio...</span>
                   </div>
                 ) : loadError ? (
@@ -1513,7 +1415,7 @@ export function TaskManagement(): JSX.Element {
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="flex items-center bg-blue-600 hover:bg-blue-700" 
+                          className="flex items-center bg-brand-green hover:bg-green-700" 
                           onClick={() => {
                             if (selectedTaskId) {
                               const tarea = tareasPendientes.find(t => t.tramite.trmId.toString() === selectedTaskId);
@@ -1577,8 +1479,8 @@ export function TaskManagement(): JSX.Element {
                 ) : (
                   <>
                     <div className="flex items-center mb-4">
-                      <div className="bg-green-500 rounded-full h-4 w-4 mr-2"></div>
-                      <h2 className="text-xl font-semibold text-gray-800">Predio</h2>
+                      <div className="bg-brand-yellow rounded-full h-4 w-4 mr-2"></div>
+                      <h2 className="text-xl font-semibold text-brand-dark-blue">Predio</h2>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1629,13 +1531,13 @@ export function TaskManagement(): JSX.Element {
               {/* Sección: Documentos */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-6">
                 <div className="flex items-center mb-4">
-                  <div className="bg-orange-500 rounded-full h-4 w-4 mr-2"></div>
-                  <h2 className="text-xl font-semibold text-gray-800">Documentos</h2>
+                  <div className="bg-brand-medium-blue rounded-full h-4 w-4 mr-2"></div>
+                  <h2 className="text-xl font-semibold text-brand-dark-blue">Documentos</h2>
                 </div>
                 
                 {isLoading ? (
                   <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div>
                     <span className="ml-3 text-gray-600">Cargando documentos...</span>
                   </div>
                 ) : loadError ? (
@@ -1664,7 +1566,7 @@ export function TaskManagement(): JSX.Element {
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="flex items-center bg-blue-600 hover:bg-blue-700" 
+                          className="flex items-center bg-brand-green hover:bg-green-700" 
                           onClick={() => {
                             if (selectedTaskId) {
                               const tarea = tareasPendientes.find(t => t.tramite.trmId.toString() === selectedTaskId);
@@ -1708,7 +1610,7 @@ export function TaskManagement(): JSX.Element {
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="flex items-center bg-blue-600 hover:bg-blue-700" 
+                          className="flex items-center bg-brand-green hover:bg-green-700" 
                           onClick={() => {
                             if (selectedTaskId) {
                               const tarea = tareasPendientes.find(t => t.tramite.trmId.toString() === selectedTaskId);
@@ -1751,9 +1653,9 @@ export function TaskManagement(): JSX.Element {
                               <div className="flex items-center space-x-3">
                                 <FileIcon className={`h-8 w-8 ${
                                   fileExt === 'pdf' ? 'text-red-500' : 
-                                  ['jpg', 'jpeg', 'png', 'gif'].includes(fileExt) ? 'text-purple-500' : 
-                                  ['xlsx', 'xls', 'csv'].includes(fileExt) ? 'text-green-500' : 
-                                  ['docx', 'doc'].includes(fileExt) ? 'text-blue-500' : 'text-gray-500'
+                                  ['jpg', 'jpeg', 'png', 'gif'].includes(fileExt) ? 'text-brand-medium-blue' : 
+                                  ['xlsx', 'xls', 'csv'].includes(fileExt) ? 'text-brand-green' : 
+                                  ['docx', 'doc'].includes(fileExt) ? 'text-brand-dark-blue' : 'text-gray-500'
                                 }`} />
                                 <div>
                                   <p className="text-sm font-medium text-gray-700">{doc.nombreOriginal || 'Documento sin nombre'}</p>
@@ -1788,196 +1690,50 @@ export function TaskManagement(): JSX.Element {
                 )}
               </div>
             
-              {/* Sección: Analista */}
-              <div className={`bg-white rounded-lg shadow-sm border ${isTaskStarted ? 'border-gray-200' : 'border-gray-100'} p-5 mb-6`}>
-                {isLoading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-                    <span className="ml-3 text-gray-600">Cargando información de la tarea...</span>
+              {/* Sección: Tipo de Observaciones */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-6">
+                <div className="flex items-center mb-4">
+                  <div className="bg-brand-dark-blue rounded-full h-4 w-4 mr-2"></div>
+                  <h2 className="text-xl font-semibold text-brand-dark-blue">Evaluación</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tipo-observaciones" className="text-base font-medium text-gray-700">
+                      Tipo de observaciones:
+                    </Label>
+                    <Select
+                      value={tipoObservaciones || ""}
+                      onValueChange={(value) => setTipoObservaciones(value as 'Menores' | 'Mayores' | 'Ninguna')}
+                    >
+                      <SelectTrigger className="w-full max-w-xs focus:ring-brand-green focus:border-brand-green">
+                        <SelectValue placeholder="Seleccione una opción" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Menores">Menores</SelectItem>
+                        <SelectItem value="Mayores">Mayores</SelectItem>
+                        <SelectItem value="Ninguna">Ninguna</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ) : loadError ? (
-                  <div className="flex flex-col items-center justify-center py-6 px-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-5 w-full max-w-lg shadow-sm">
-                      <div className="flex items-center justify-center mb-4">
-                        <div className="bg-red-100 p-2 rounded-full">
-                          <AlertCircle className="h-6 w-6 text-red-600" />
-                        </div>
-                      </div>
-                      <h3 className="text-lg font-semibold text-red-700 text-center mb-2">Error al cargar información</h3>
-                      <p className="text-red-600 text-center mb-3">{loadError}</p>
-                      <p className="text-gray-600 text-sm text-center mb-4">No pudimos cargar los detalles de esta tarea. Esto podría deberse a un cambio reciente en la asignación o a que la tarea ya no está activa.</p>
-                      <div className="flex justify-center space-x-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="bg-white hover:bg-gray-100 border-gray-300 flex items-center" 
-                          onClick={() => window.location.reload()}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Recargar página
-                        </Button>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="flex items-center bg-blue-600 hover:bg-blue-700" 
-                          onClick={() => {
-                            if (selectedTaskId) {
-                              const tarea = tareasPendientes.find(t => t.tramite.trmId.toString() === selectedTaskId);
-                              if (tarea) {
-                                fetchTramiteDetalle(tarea.tramite.trmId);
-                              }
-                            }
-                          }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          Reintentar carga
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : !tramiteData ? (
-                  <div className="flex flex-col items-center justify-center py-6 px-4">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 w-full max-w-lg shadow-sm">
-                      <div className="flex items-center justify-center mb-4">
-                        <div className="bg-gray-100 p-2 rounded-full">
-                          <AlertCircle className="h-6 w-6 text-gray-500" />
-                        </div>
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-700 text-center mb-2">Información no disponible</h3>
-                      <p className="text-gray-600 text-center mb-3">No hay información disponible para esta tarea</p>
-                      <p className="text-gray-500 text-sm text-center mb-4">Es posible que la tarea haya sido reasignada o que no tenga información asociada en este momento.</p>
-                      <div className="flex justify-center space-x-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="bg-white hover:bg-gray-100 border-gray-300 flex items-center" 
-                          onClick={() => window.location.reload()}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Recargar página
-                        </Button>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          onClick={closeDetailPanel}
-                        >
-                          Volver a la lista
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : tramiteData.data.estadoProceso === "SIN_TAREA_ACTIVA" ? (
-                  <div className="flex flex-col items-center justify-center py-6 text-gray-500">
-                    <div className="flex items-center mb-4">
-                      <div className="bg-purple-500 rounded-full h-4 w-4 mr-2"></div>
-                      <h2 className="text-xl font-semibold text-gray-800">Analista</h2>
-                    </div>
-                    <AlertCircle className="h-8 w-8 mb-2 text-yellow-500" />
-                    <p className="text-center text-yellow-700 font-medium">Este trámite no tiene una tarea activa asignada</p>
-                    <p className="text-center text-gray-600 mt-2">Estado: {tramiteData.data.estadoProceso}</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center mb-4">
-                      <div className="bg-purple-500 rounded-full h-4 w-4 mr-2"></div>
-                      <h2 className="text-xl font-semibold text-gray-800">Analista</h2>
-                      {!isTaskStarted && (
-                        <div className="ml-3 px-2 py-0.5 bg-gray-100 rounded text-sm text-gray-500">
-                          Modo lectura
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className={`mt-2 ${!isTaskStarted ? 'opacity-70' : ''}`}>
-                      <h3 className="text-base font-medium text-gray-700 mb-3">Cumple con los requisitos:</h3>
-                      
-                      <div className="flex items-center gap-8 ml-4">
-                        <label className={`flex items-center ${isTaskStarted ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
-                          <input 
-                            type="radio" 
-                            name="requirements" 
-                            className="h-5 w-5 text-blue-600" 
-                            checked={cumpliendoRequisitos === 'si'}
-                            onChange={() => isTaskStarted && setCumpliendoRequisitos('si')}
-                            disabled={!isTaskStarted}
-                          />
-                          <span className="ml-2 text-gray-800">Sí</span>
-                        </label>
-                        
-                        <label className={`flex items-center ${isTaskStarted ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
-                          <input 
-                            type="radio" 
-                            name="requirements" 
-                            className="h-5 w-5 text-blue-600" 
-                            checked={cumpliendoRequisitos === 'no'}
-                            onChange={() => isTaskStarted && setCumpliendoRequisitos('no')}
-                            disabled={!isTaskStarted}
-                          />
-                          <span className="ml-2 text-gray-800">No</span>
-                        </label>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
 
-              {/* Botones de acción */}
-              {tramiteData && tramiteData.data.estadoProceso !== "SIN_TAREA_ACTIVA" && (
-                <div className="flex justify-between mt-8">
-                  <div className="flex gap-3">
-                    {isTaskStarted && cumpliendoRequisitos === 'si' && (
+                  {/* Botón de Elaborar Informe iprus - Solo visible cuando se selecciona "Menores" */}
+                  {tipoObservaciones === 'Menores' && (
+                    <div className="pt-4">
                       <Button
                         variant="outline"
                         size="lg"
-                        className="border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                        className="border-brand-medium-blue bg-blue-50 text-brand-medium-blue hover:bg-blue-100"
                         onClick={() => setIsIprusModalOpen(true)}
                       >
                         <FileSignature className="h-5 w-5 mr-2" />
-                        Elaborar Informe Iprus
+                        Elaborar Informe iprus
                       </Button>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                  <Button
-                    size="lg"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    disabled={!isTaskStarted || cumpliendoRequisitos === null}
-                    onClick={() => {
-                      if (!isTaskStarted || cumpliendoRequisitos === null) return;
-                      
-                      toast({
-                        title: "Trámite enviado",
-                        description: `El trámite ha sido ${cumpliendoRequisitos === 'si' ? 'aprobado' : 'rechazado'} y enviado a revisión`,
-                        variant: cumpliendoRequisitos === 'si' ? "success" : "destructive"
-                      });
-                      
-                      // Aquí iría la lógica de envío a revisión
-                      // Luego, cerrar el panel
-                      setShowDetailPanel(false);
-                    }}
-                  >
-                    {cumpliendoRequisitos === 'si' ? 'Aprobar y enviar' : 
-                     cumpliendoRequisitos === 'no' ? 'Rechazar y enviar' : 
-                     'Enviar a revisión'}
-                  </Button>
-                </div>
-              )}
-              
-              {/* Mensaje cuando no hay tarea activa */}
-              {tramiteData && tramiteData.data.estadoProceso === "SIN_TAREA_ACTIVA" && (
-                <div className="flex justify-center mt-8">
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 text-center max-w-lg">
-                    <p className="text-yellow-800 font-medium mb-2">Este trámite no tiene acciones disponibles</p>
-                    <p className="text-gray-700 text-sm">El trámite se encuentra en estado "{tramiteData.data.tramite.estado}" y no tiene una tarea activa asignada.</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
