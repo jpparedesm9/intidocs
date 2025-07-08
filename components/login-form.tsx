@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -303,23 +304,18 @@ export function LoginForm() {
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="space-y-1 text-center pb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-brand-dark-blue p-4 rounded-full shadow-lg">
-              <FileText className="h-10 w-10 text-brand-yellow" />
+            <div className="relative w-48 h-24">
+              <Image
+                src="/images/logo.png"
+                alt="GAD Municipal del Cantón Mejía"
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold text-brand-dark-blue">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-gray-600 text-base">Sistema de Gestión Documental</CardDescription>
-          <p className="text-sm text-brand-medium-blue font-medium mt-2">GAD Municipal del Cantón Mejía</p>
         </CardHeader>
         <CardContent>
-          {/* Connection Status */}
-          <div className="mb-4 flex items-center justify-between">
-            <Button type="button" variant="outline" size="sm" onClick={testConnection} className="text-xs">
-              <RefreshCw className="h-3 w-3 mr-1" />
-              Probar Conexión
-            </Button>
-            {connectionStatus && <span className="text-xs font-medium">{connectionStatus}</span>}
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -389,24 +385,6 @@ export function LoginForm() {
             </div>
           )}
 
-          {/* Connection Information */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600 border border-gray-200">
-            <div className="flex items-center mb-2">
-              <AlertCircle className="h-3 w-3 mr-1 text-brand-medium-blue" />
-              <span className="font-semibold text-brand-dark-blue">Información de Conexión</span>
-            </div>
-            <p>• Conexión: DIRECTA al backend</p>
-            <p>• Backend URL: {BACKEND_LOGIN_URL}</p>
-              
-            {debugInfo && (
-              <div className="mt-2 p-2 bg-white rounded border">
-                <p className="font-semibold">Estado de Conexión:</p>
-                <p>• Backend Reachable: {debugInfo.backendReachable ? "✅" : "❌"}</p>
-                <p>• Backend Status: {debugInfo.backendStatus}</p>
-                {debugInfo.error && <p>• Error: {debugInfo.error}</p>}
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>

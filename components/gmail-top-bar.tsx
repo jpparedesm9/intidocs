@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Search, Settings, HelpCircle, Menu, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,12 +68,28 @@ export function GmailTopBar({ toggleSidebar, sidebarCollapsed }: GmailTopBarProp
           transition: 'width 0.3s ease-in-out',
           borderRight: '1px solid #e5e7eb'
         }}>
-        {/* Logo placeholder - contraído o expandido según el estado del menú */}
-        <div className="h-8 flex items-center justify-center w-full">
+        {/* Logo - contraído o expandido según el estado del menú */}
+        <div className="h-8 flex items-center justify-center w-full px-3">
           {sidebarCollapsed ? (
-            <div className="text-lg font-bold text-gray-700">LG</div>
+            <div className="relative w-8 h-8">
+              <Image
+                src="/images/logo_short.png"
+                alt="GAD Mejía"
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
           ) : (
-            <div className="text-lg font-semibold text-gray-700 pl-4">LOGO</div>
+            <div className="relative w-full h-8">
+              <Image
+                src="/images/logo.png"
+                alt="GAD Municipal del Cantón Mejía"
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
           )}
         </div>
       </div>
