@@ -11,9 +11,10 @@ import { createPortal } from "react-dom"
 interface IprusReportDialogProps {
   isOpen: boolean
   onClose: () => void
+  preId: number | null
 }
 
-export function IprusReportDialog({ isOpen, onClose }: IprusReportDialogProps) {
+export function IprusReportDialog({ isOpen, onClose, preId }: IprusReportDialogProps) {
   // States for different views
   const [view, setView] = useState<'preview' | 'signing'>('preview')
   const [mounted, setMounted] = useState(false)
@@ -35,7 +36,11 @@ export function IprusReportDialog({ isOpen, onClose }: IprusReportDialogProps) {
       setError(null)
       
       try {
-        const response = await fetch('https://servicios.municipiodemejia.gob.ec/planificacionTerritorial/rest/irm/consultarInformePreliminarPdf/10032', {
+        if (!preId) {
+          throw new Error('No se encontró el ID del predio para generar el informe')
+        }
+        
+        const response = await fetch(`https://servicios.municipiodemejia.gob.ec/planificacionTerritorial/rest/irm/consultarInformePreliminarPdf/${preId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -62,14 +67,14 @@ export function IprusReportDialog({ isOpen, onClose }: IprusReportDialogProps) {
       }
     }
     
-    if (mounted) {
+    if (mounted && isOpen) {
       fetchPdfData()
     }
     
     return () => {
       setMounted(false)
     }
-  }, [mounted])
+  }, [mounted, isOpen, preId])
 
   // Handle going to signing view
   const handleGoToSigning = useCallback(() => {
@@ -171,7 +176,14 @@ export function IprusReportDialog({ isOpen, onClose }: IprusReportDialogProps) {
                         setError(null)
                         setIsLoading(true)
                         // Re-fetch the PDF
-                        fetch('https://servicios.municipiodemejia.gob.ec/planificacionTerritorial/rest/irm/consultarInformePreliminarPdf/10032', {
+                        if (!preId) {
+                          setError('No se encontró el ID del predio para generar el informe')
+                          setPdfLoadError(true)
+                          setIsLoading(false)
+                          return
+                        }
+                        
+                        fetch(`https://servicios.municipiodemejia.gob.ec/planificacionTerritorial/rest/irm/consultarInformePreliminarPdf/${preId}`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',

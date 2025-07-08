@@ -1743,6 +1743,7 @@ export function TaskManagement(): JSX.Element {
       <IprusReportDialog 
         isOpen={isIprusModalOpen} 
         onClose={() => setIsIprusModalOpen(false)}
+        preId={tramiteData?.data.tramite.preId || null}
       />
     </div>
   )
