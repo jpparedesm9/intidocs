@@ -60,7 +60,7 @@ export default function GmailInterface() {
   
   // Nombres legibles para cada elemento del menú
   const menuItemLabels: Record<string, string> = {
-    dashboard: "Dashboard",
+    dashboard: "Métricas",
     tareas: "Tareas",
     seguimiento: "Seguimiento",
     administracion: "Administración",
@@ -357,10 +357,10 @@ export default function GmailInterface() {
                             : "text-gray-300"
                         } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                         onClick={() => handleMenuItemClick("dashboard")}
-                        title={sidebarCollapsed ? "Dashboard" : ""}
+                        title={sidebarCollapsed ? "Métricas" : ""}
                       >
                         <LayoutGrid className={`h-5 w-5 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
-                        {!sidebarCollapsed && <span>{searchQuery ? highlightText("Dashboard", searchQuery) : "Dashboard"}</span>}
+                        {!sidebarCollapsed && <span>{searchQuery ? highlightText("Métricas", searchQuery) : "Métricas"}</span>}
                       </SidebarMenuButton>
                       {selectedMenuItem === "dashboard" && (
                         <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
@@ -808,7 +808,7 @@ export default function GmailInterface() {
                         onClick={() => handleMenuItemClick("dashboard")}
                       >
                         <LayoutGrid className="h-4 w-4 mr-3" />
-                        <span>{searchQuery ? highlightText("Dashboard", searchQuery) : "Dashboard"}</span>
+                        <span>{searchQuery ? highlightText("Métricas", searchQuery) : "Métricas"}</span>
                       </div>
                     )}
                     {(filteredMenuItems.includes("tareas") || !searchQuery) && (

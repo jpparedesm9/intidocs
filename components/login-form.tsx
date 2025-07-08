@@ -14,8 +14,8 @@ import { useAuth } from "@/hooks/use-auth"
 const BACKEND_LOGIN_URL = "http://127.0.0.1:8082/api/intdocs/auth/login"
 
 export function LoginForm() {
-  const [username, setUsername] = useState("admin")
-  const [password, setPassword] = useState("admin123")
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null)
@@ -97,46 +97,7 @@ export function LoginForm() {
     setConnectionStatus(null)
     setLastError(null)
 
-    // Check for mock login with username "admin"
-    if (username.trim().toLowerCase() === "admin") {
-      console.log("=== MOCK LOGIN ===")
-      console.log("1. Using mock data for 'admin' user")
-      
-      // Create mock auth data
-      const mockAuthData = {
-        token: "mock-jwt-token-xyz123456789",
-        tokenType: "Bearer",
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-        user: {
-          userId: 1,
-          username: "admin",
-          fullName: "Administrador del Sistema",
-          email: "admin@example.com",
-          roles: ["ADMIN", "USER"],
-          permissions: ["CREATE_DOCUMENT", "READ_DOCUMENT", "UPDATE_DOCUMENT", "DELETE_DOCUMENT"],
-          organizationId: 1,
-          organizationName: "Organización Demo",
-          departmentId: 1,
-          departmentName: "Administración",
-          userSource: "MOCK",
-        },
-      }
-
-      // Short delay to simulate network request
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      console.log("2. Mock login successful, storing auth data")
-      login(mockAuthData)
-
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: `Bienvenido, ${mockAuthData.user.fullName}`,
-        variant: "success",
-      })
-      
-      setIsLoading(false)
-      return
-    }
+    // No longer using mock login - all logins go through the real API
 
     try {
       console.log("=== DIRECT LOGIN DEBUG ===")
@@ -178,7 +139,13 @@ export function LoginForm() {
         setLastError(errorDetails)
 
         // Handle specific HTTP status codes
-        if (response.status === 404) {
+        if (response.status === 401) {
+          toast({
+            title: "Credenciales incorrectas",
+            description: "El usuario o la contraseña son incorrectos. Por favor, intente nuevamente.",
+            variant: "destructive",
+          })
+        } else if (response.status === 404) {
           toast({
             title: "Endpoint no encontrado",
             description: "El endpoint de login no existe en el servidor backend.",
@@ -194,6 +161,18 @@ export function LoginForm() {
           toast({
             title: "Error interno del servidor",
             description: "El servidor backend tiene un error interno.",
+            variant: "destructive",
+          })
+        } else if (response.status === 403) {
+          toast({
+            title: "Acceso denegado",
+            description: "No tiene permiso para acceder al sistema. Contacte al administrador.",
+            variant: "destructive",
+          })
+        } else if (response.status === 429) {
+          toast({
+            title: "Demasiados intentos",
+            description: "Ha realizado demasiados intentos de inicio de sesión. Por favor, intente más tarde.",
             variant: "destructive",
           })
         } else {
@@ -286,19 +265,31 @@ export function LoginForm() {
       if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
         toast({
           title: "Error de conexión",
-          description: "No se pudo conectar al servidor backend. Verifica que esté ejecutándose en el puerto 8082.",
+          description: "No se pudo conectar al servidor. Verifique su conexión a internet o contacte al administrador del sistema.",
           variant: "destructive",
         })
       } else if (error instanceof Error && error.message.includes("CORS")) {
         toast({
-          title: "Error de CORS",
-          description: "El servidor backend no permite conexiones desde este dominio.",
+          title: "Error de configuración",
+          description: "Error de configuración del servidor. Por favor contacte al administrador del sistema.",
+          variant: "destructive",
+        })
+      } else if (error instanceof Error && error.message.includes("NetworkError")) {
+        toast({
+          title: "Error de red",
+          description: "Existe un problema con la conexión a internet. Por favor verifique su conexión y vuelva a intentarlo.",
+          variant: "destructive",
+        })
+      } else if (error instanceof Error && error.message.includes("timeout")) {
+        toast({
+          title: "Tiempo de espera agotado",
+          description: "El servidor está tardando demasiado en responder. Intente nuevamente más tarde.",
           variant: "destructive",
         })
       } else {
         toast({
-          title: "Error de red",
-          description: error instanceof Error ? error.message : "Error desconocido de conexión.",
+          title: "Error de autenticación",
+          description: "Ocurrió un error durante el inicio de sesión. Por favor intente nuevamente.",
           variant: "destructive",
         })
       }
@@ -397,32 +388,23 @@ export function LoginForm() {
             </div>
           )}
 
-          {/* Debug Information */}
+          {/* Connection Information */}
           <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
             <div className="flex items-center mb-2">
               <AlertCircle className="h-3 w-3 mr-1" />
-              <span className="font-semibold">Información de Debug</span>
+              <span className="font-semibold">Información de Conexión</span>
             </div>
-            <p>• Modo Mock: Usuario "admin" con cualquier contraseña para login de prueba</p>
-            <p>• Conexión: DIRECTA (sin proxy)</p>
+            <p>• Conexión: DIRECTA al backend</p>
             <p>• Backend URL: {BACKEND_LOGIN_URL}</p>
-            <p>• Usuario: {username}</p>
-            <p>• Contraseña: {"*".repeat(password.length)}</p>
-
+              
             {debugInfo && (
               <div className="mt-2 p-2 bg-white rounded border">
                 <p className="font-semibold">Estado de Conexión:</p>
-                <p>• Backend URL: {debugInfo.backendUrl}</p>
                 <p>• Backend Reachable: {debugInfo.backendReachable ? "✅" : "❌"}</p>
                 <p>• Backend Status: {debugInfo.backendStatus}</p>
-                {debugInfo.backendResponse && <p>• Backend Response: {debugInfo.backendResponse}</p>}
                 {debugInfo.error && <p>• Error: {debugInfo.error}</p>}
               </div>
             )}
-
-            <p className="mt-2 text-orange-600">
-              ⚠️ Conexión directa al backend - Asegúrate de que el servidor tenga CORS habilitado
-            </p>
           </div>
         </CardContent>
       </Card>

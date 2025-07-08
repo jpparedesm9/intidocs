@@ -104,6 +104,77 @@ export function GmailTopBar({ toggleSidebar, sidebarCollapsed }: GmailTopBarProp
           />
         </form>
       </div>
+
+      {/* Right section - User profile & settings */}
+      <div className="flex items-center space-x-2 pr-4">
+        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
+          <Settings className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+        
+        {/* User Profile Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 p-0 overflow-hidden">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder-user.jpg" alt="User" />
+                <AvatarFallback className="bg-blue-500 text-white">
+                  {user?.fullName ? getInitials(user.fullName) : "U"}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="flex flex-col">
+                <p className="font-medium">{user?.fullName || "Usuario"}</p>
+                <p className="text-xs text-gray-500 mt-1">{user?.email || "email@example.com"}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Mi Perfil</span>
+            </DropdownMenuItem>
+            
+            {/* Profiles Submenu */}
+            {userProfiles.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-gray-500 py-1">
+                  Perfiles
+                </DropdownMenuLabel>
+                
+                {userProfiles.map((profile) => (
+                  <DropdownMenuItem 
+                    key={profile.profileId} 
+                    className="cursor-pointer"
+                    onClick={() => handleProfileSelect(profile)}
+                  >
+                    <div className="flex items-center w-full">
+                      <span className={`${activeProfile?.profileId === profile.profileId ? 'font-medium' : ''} flex-1`}>
+                        {profile.departmentName} - {profile.position}
+                      </span>
+                      {activeProfile?.profileId === profile.profileId && (
+                        <div className="h-2 w-2 rounded-full bg-green-500 ml-1"></div>
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50" onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Cerrar Sesión</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   )
 }
