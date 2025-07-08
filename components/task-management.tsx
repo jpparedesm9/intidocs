@@ -542,19 +542,19 @@ export function TaskManagement(): JSX.Element {
     switch (priority) {
       case "alta":
         return (
-          <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">
+          <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 hover:bg-red-100">
             Alta
           </Badge>
         )
       case "media":
         return (
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+          <Badge variant="outline" className="bg-brand-yellow/20 text-brand-dark-blue border-brand-yellow hover:bg-brand-yellow/30">
             Media
           </Badge>
         )
       case "baja":
         return (
-          <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge variant="outline" className="bg-brand-green/20 text-brand-green border-brand-green hover:bg-brand-green/30">
             Baja
           </Badge>
         )
@@ -567,19 +567,19 @@ export function TaskManagement(): JSX.Element {
     switch (status) {
       case "pendiente":
         return (
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+          <Badge variant="outline" className="bg-brand-yellow/20 text-brand-dark-blue border-brand-yellow hover:bg-brand-yellow/30">
             Pendiente
           </Badge>
         )
       case "en progreso":
         return (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+          <Badge variant="outline" className="bg-brand-medium-blue/20 text-brand-medium-blue border-brand-medium-blue hover:bg-brand-medium-blue/30">
             En Progreso
           </Badge>
         )
       case "completada":
         return (
-          <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge variant="outline" className="bg-brand-green/20 text-brand-green border-brand-green hover:bg-brand-green/30">
             Completada
           </Badge>
         )
@@ -614,8 +614,8 @@ export function TaskManagement(): JSX.Element {
       return <ArrowUpDown className="h-4 w-4 opacity-50" />
     }
     return sortDirection === 'asc' 
-      ? <ArrowUp className="h-4 w-4 text-blue-600" />
-      : <ArrowDown className="h-4 w-4 text-blue-600" />
+      ? <ArrowUp className="h-4 w-4 text-brand-green" />
+      : <ArrowDown className="h-4 w-4 text-brand-green" />
   }
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -822,7 +822,7 @@ export function TaskManagement(): JSX.Element {
           <div className="flex items-center">
             <span className="font-medium mr-2">Tareas</span>
             <ChevronDown className="h-4 w-4 text-gray-500" />
-            <span className="ml-4 text-blue-600 md:inline hidden">
+            <span className="ml-4 text-brand-green font-medium md:inline hidden">
               {filteredTasks.filter((t) => t.status !== "completada").length} Tareas pendientes
             </span>
           </div>
@@ -862,7 +862,7 @@ export function TaskManagement(): JSX.Element {
             <Button 
               variant="ghost" 
               size="sm" 
-              className={`text-gray-500 filter-button ${isFilterOpen ? 'bg-gray-100' : ''} ${statusFilter || priorityFilter ? 'border-blue-500 text-blue-600' : ''}`}
+              className={`text-gray-500 filter-button ${isFilterOpen ? 'bg-gray-100' : ''} ${statusFilter || priorityFilter ? 'border-brand-green text-brand-green' : ''}`}
               onClick={() => setIsFilterOpen(!isFilterOpen)}
             >
               <span className="text-sm mr-1">
@@ -1008,7 +1008,7 @@ export function TaskManagement(): JSX.Element {
               placeholder="Buscar tareas"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-1 w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="pl-10 pr-4 py-1 w-full border border-gray-300 rounded-lg focus:ring-brand-green focus:border-brand-green text-sm"
             />
           </div>
           <div className="ml-auto">
@@ -1026,7 +1026,7 @@ export function TaskManagement(): JSX.Element {
             <div className="flex items-center px-4 py-2 bg-gray-100 text-xs font-medium text-gray-700 border-y sticky top-0 z-10">
               <div className="flex items-center mr-2 flex-shrink-0 w-4"></div>
               <div 
-                className="w-[80px] min-w-[80px] flex items-center cursor-pointer hover:text-blue-700 group"
+                className="w-[80px] min-w-[80px] flex items-center cursor-pointer hover:text-brand-green group"
                 onClick={() => toggleSort('id')}
               >
                 <span className="font-semibold">ID</span>

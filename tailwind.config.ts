@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import { tailwindColors, theme } from "./lib/theme/colors"
 
 const config = {
   darkMode: ["class"],
@@ -20,39 +21,54 @@ const config = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Colores de la marca
+        brand: tailwindColors.brand,
+        
+        // Colores del sistema basados en la marca
+        border: theme.colors.border.default,
+        input: theme.colors.border.default,
+        ring: theme.colors.primary.green,
+        background: theme.colors.background.primary,
+        foreground: theme.colors.text.primary,
+        
+        // Colores principales
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: theme.colors.primary.green,
+          foreground: theme.colors.text.inverse,
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: theme.colors.primary.mediumBlue,
+          foreground: theme.colors.text.inverse,
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: theme.colors.status.error,
+          foreground: theme.colors.text.inverse,
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: theme.colors.gray[100],
+          foreground: theme.colors.text.secondary,
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: theme.colors.primary.yellow,
+          foreground: theme.colors.primary.darkBlue,
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: theme.colors.background.primary,
+          foreground: theme.colors.text.primary,
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: theme.colors.background.primary,
+          foreground: theme.colors.text.primary,
         },
+        
+        // Escala de grises
+        gray: theme.colors.gray,
+        
+        // Colores de estado
+        success: theme.colors.status.success,
+        warning: theme.colors.status.warning,
+        error: theme.colors.status.error,
+        info: theme.colors.status.info,
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -83,7 +83,7 @@ export default function GmailInterface() {
     const parts = text.split(new RegExp(`(${query})`, 'gi'));
     return parts.map((part, i) => 
       part.toLowerCase() === query.toLowerCase() 
-        ? <span key={i} className="bg-blue-700/50 text-white font-medium px-0.5 rounded">{part}</span> 
+        ? <span key={i} className="bg-brand-yellow/30 text-brand-yellow font-medium px-0.5 rounded">{part}</span> 
         : part
     );
   };
@@ -224,17 +224,17 @@ export default function GmailInterface() {
             scrollbarWidth: 'thin',
             scrollbarColor: '#4A5568 #1a1d21',
             paddingRight: '2px', // Adds some spacing for the scrollbar
-            background: 'linear-gradient(180deg, #1a1d21 0%, #2d3748 100%)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            background: '#028738', /* Verde institucional de la marca */
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1)'
           }}
-          className="border-r border-gray-700/30 text-white md:block hidden custom-scrollbar"
+          className="border-r border-green-900/30 text-white md:block hidden custom-scrollbar"
         >
           <Sidebar className="w-full h-full" style={{ paddingTop: '3.5rem' }}> {/* Padding exacto para alinearse con la barra superior */}
             <SidebarHeader className="py-2 flex flex-col space-y-2 w-full mb-0 pb-0" style={{ width: '100%', padding: '0', boxSizing: 'border-box' }}>
               {/* User Identity Widget */}
               <div 
                 className={`flex items-center cursor-pointer rounded-md ${sidebarCollapsed ? 'justify-center w-8 mx-auto p-1.5' : 'justify-between w-full p-1.5'} 
-                           border border-gray-700 hover:border-gray-600 transition-all duration-200`}
+                           bg-white/10 border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-200`}
                 style={!sidebarCollapsed ? { width: '100%', margin: '0 1rem', boxSizing: 'border-box' } : {}}
                 onClick={() => {
                   // Aquí iría la funcionalidad para abrir un menú desplegable de selección de perfil
@@ -243,7 +243,7 @@ export default function GmailInterface() {
               >
                 {/* Avatar del usuario */}
                 <div className="flex items-center space-x-2">
-                  <div className="h-6 w-6 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-xs">
+                  <div className="h-6 w-6 rounded-full bg-brand-yellow flex items-center justify-center text-brand-dark-blue font-medium text-xs">
                     JP
                   </div>
                   
@@ -306,7 +306,7 @@ export default function GmailInterface() {
                 <div style={{ width: '100%', padding: '0 1rem', boxSizing: 'border-box' }}>
                   <div className="relative w-full" style={{ width: '100%', boxSizing: 'border-box' }}>
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <Search className="h-3.5 w-3.5 text-gray-400" />
+                      <Search className="h-3.5 w-3.5 text-white/60" />
                     </div>
                     <input
                       type="text"
@@ -314,18 +314,18 @@ export default function GmailInterface() {
                       aria-label="Buscar en los elementos del menú"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className={`pl-8 pr-8 py-1.5 w-full bg-gray-800 border ${searchQuery ? 'border-blue-400 shadow-[0_0_0_1px_rgba(59,130,246,0.3)]' : 'border-gray-700'} focus:border-blue-400 focus:ring-0 rounded-md text-xs text-gray-200 placeholder:text-gray-500 transition-all duration-200`}
+                      className={`pl-8 pr-8 py-1.5 w-full bg-white/10 border ${searchQuery ? 'border-brand-yellow shadow-[0_0_0_1px_rgba(252,193,8,0.3)]' : 'border-white/20'} focus:border-brand-yellow focus:ring-0 rounded-md text-xs text-white placeholder:text-white/60 transition-all duration-200`}
                     />
                     <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
                       {searchQuery ? (
                         <button
                           onClick={() => setSearchQuery("")}
-                          className="text-gray-400 hover:text-gray-200 focus:outline-none"
+                          className="text-white/60 hover:text-white focus:outline-none"
                         >
                           <X className="h-3 w-3" />
                         </button>
                       ) : (
-                        <Search className="h-3.5 w-3.5 text-gray-400" />
+                        <Search className="h-3.5 w-3.5 text-white/60" />
                       )}
                     </div>
                   </div>
@@ -351,10 +351,10 @@ export default function GmailInterface() {
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         isActive={selectedMenuItem === "dashboard"}
-                        className={`py-1 ${selectedMenuItem !== "dashboard" ? "hover:bg-gray-700/50 hover:backdrop-blur-sm" : "hover:text-white"} sidebar-menu-button transition-all duration-200 ${
+                        className={`py-1 ${selectedMenuItem !== "dashboard" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button transition-all duration-200 ${
                           selectedMenuItem === "dashboard"
-                            ? "text-gray-300 font-medium w-full"
-                            : "text-gray-300"
+                            ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                            : "text-white"
                         } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                         onClick={() => handleMenuItemClick("dashboard")}
                         title={sidebarCollapsed ? "Métricas" : ""}
@@ -363,7 +363,7 @@ export default function GmailInterface() {
                         {!sidebarCollapsed && <span>{searchQuery ? highlightText("Métricas", searchQuery) : "Métricas"}</span>}
                       </SidebarMenuButton>
                       {selectedMenuItem === "dashboard" && (
-                        <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                        <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                       )}
                     </SidebarMenuItem>
                   )}
@@ -371,16 +371,16 @@ export default function GmailInterface() {
                 {!sidebarCollapsed && (
                   <div
                     onClick={() => toggleSection("tramites")}
-                    className="flex items-center px-4 py-1 my-1 text-sm font-semibold tracking-wider text-gray-300/90 cursor-pointer hover:bg-gray-700/40 hover:text-white rounded-md transition-colors duration-200"
+                    className="flex items-center px-4 py-1 my-1 text-sm font-semibold tracking-wider text-white/90 cursor-pointer hover:bg-white/10 hover:text-white rounded-md transition-colors duration-200"
                   >
                     {expandedSections.tramites ? (
-                      <ChevronDown className="h-4 w-4 mr-2 text-blue-400" />
+                      <ChevronDown className="h-4 w-4 mr-2 text-brand-yellow" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 mr-2 text-blue-400" />
+                      <ChevronRight className="h-4 w-4 mr-2 text-brand-yellow" />
                     )}
                     <span className="text-xs tracking-widest">TRÁMITES</span>
                     <div className="ml-auto flex items-center">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white hover:bg-gray-600/50 rounded-full">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white/60 hover:text-white hover:bg-white/20 rounded-full">
                         <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -403,10 +403,10 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "tareas"}
-                          className={`py-1 ${selectedMenuItem !== "tareas" ? "hover:bg-gray-700/50 hover:backdrop-blur-sm" : "hover:text-white"} sidebar-menu-button transition-all duration-200 ${
+                          className={`py-1 ${selectedMenuItem !== "tareas" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button transition-all duration-200 ${
                             selectedMenuItem === "tareas"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("tareas")}
                           title={sidebarCollapsed ? "Tareas" : ""}
@@ -415,7 +415,7 @@ export default function GmailInterface() {
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Tareas", searchQuery) : "Tareas"}</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "tareas" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -424,10 +424,10 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "seguimiento"}
-                          className={`py-1 ${selectedMenuItem !== "seguimiento" ? "hover:bg-gray-700/50 hover:backdrop-blur-sm" : "hover:text-white"} sidebar-menu-button transition-all duration-200 ${
+                          className={`py-1 ${selectedMenuItem !== "seguimiento" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button transition-all duration-200 ${
                             selectedMenuItem === "seguimiento"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("seguimiento")}
                           title={sidebarCollapsed ? "Seguimiento" : ""}
@@ -436,7 +436,7 @@ export default function GmailInterface() {
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Seguimiento", searchQuery) : "Seguimiento"}</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "seguimiento" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -445,10 +445,10 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "administracion"}
-                          className={`py-1 ${selectedMenuItem !== "administracion" ? "hover:bg-gray-700/50 hover:backdrop-blur-sm" : "hover:text-white"} sidebar-menu-button transition-all duration-200 ${
+                          className={`py-1 ${selectedMenuItem !== "administracion" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button transition-all duration-200 ${
                             selectedMenuItem === "administracion"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("administracion")}
                           title={sidebarCollapsed ? "Administración" : ""}
@@ -457,7 +457,7 @@ export default function GmailInterface() {
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Administración", searchQuery) : "Administración"}</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "administracion" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -470,16 +470,16 @@ export default function GmailInterface() {
                 {!sidebarCollapsed && (
                   <div
                     onClick={() => toggleSection("folders")}
-                    className="flex items-center px-4 py-1 my-1 text-sm font-semibold tracking-wider text-gray-300/90 cursor-pointer hover:bg-gray-700/40 hover:text-white rounded-md transition-colors duration-200"
+                    className="flex items-center px-4 py-1 my-1 text-sm font-semibold tracking-wider text-white/90 cursor-pointer hover:bg-white/10 hover:text-white rounded-md transition-colors duration-200"
                   >
                     {expandedSections.folders ? (
-                      <ChevronDown className="h-4 w-4 mr-2 text-blue-400" />
+                      <ChevronDown className="h-4 w-4 mr-2 text-brand-yellow" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 mr-2 text-blue-400" />
+                      <ChevronRight className="h-4 w-4 mr-2 text-brand-yellow" />
                     )}
                     <span className="text-xs tracking-widest">BANDEJAS</span>
                     <div className="ml-auto flex items-center">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white hover:bg-gray-600/50 rounded-full">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white/60 hover:text-white hover:bg-white/20 rounded-full">
                         <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -502,20 +502,20 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "recibidos"}
-                          className={`py-1 ${selectedMenuItem !== "recibidos" ? "hover:bg-gray-700/50 hover:backdrop-blur-sm" : "hover:text-white"} sidebar-menu-button transition-all duration-200 tooltip-container ${
+                          className={`py-1 ${selectedMenuItem !== "recibidos" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button transition-all duration-200 tooltip-container ${
                             selectedMenuItem === "recibidos"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("recibidos")}
                         >
                           <Inbox className={`h-5 w-5 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Recibidos", searchQuery) : "Recibidos"}</span>}
-                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium -mr-1">8</span>}
+                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-brand-yellow/20 text-brand-yellow font-medium -mr-1">8</span>}
                           {sidebarCollapsed && <span className="tooltip">Recibidos (8)</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "recibidos" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -524,19 +524,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "enviados"}
-                          className={`py-2 ${selectedMenuItem !== "enviados" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "enviados" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "enviados"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("enviados")}
                         >
-                          <Send className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Send className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Enviados", searchQuery) : "Enviados"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Enviados</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "enviados" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -545,19 +545,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "archivados"}
-                          className={`py-2 ${selectedMenuItem !== "archivados" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "archivados" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "archivados"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("archivados")}
                         >
-                          <Box className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Box className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Archivados", searchQuery) : "Archivados"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Archivados</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "archivados" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -565,20 +565,20 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "reasignados"}
-                          className={`py-2 ${selectedMenuItem !== "reasignados" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "reasignados" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "reasignados"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("reasignados")}
                         >
-                          <Mail className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Mail className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Reasignados", searchQuery) : "Reasignados"}</span>}
-                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium -mr-1">43</span>}
+                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-brand-yellow/20 text-brand-yellow font-medium -mr-1">43</span>}
                           {sidebarCollapsed && <span className="tooltip">Reasignados (43)</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "reasignados" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -587,19 +587,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "elaboracion"}
-                          className={`py-2 ${selectedMenuItem !== "elaboracion" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "elaboracion" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "elaboracion"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("elaboracion")}
                         >
-                          <Edit3 className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Edit3 className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("En Elaboración", searchQuery) : "En Elaboración"}</span>}
                           {sidebarCollapsed && <span className="tooltip">En Elaboración</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "elaboracion" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -608,19 +608,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "enviar"}
-                          className={`py-2 ${selectedMenuItem !== "enviar" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "enviar" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "enviar"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("enviar")}
                         >
-                          <Send className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Send className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Enviar", searchQuery) : "Enviar"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Enviar</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "enviar" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -629,19 +629,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "historial"}
-                          className={`py-2 ${selectedMenuItem !== "historial" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "historial" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "historial"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("historial")}
                         >
-                          <History className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <History className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Historial", searchQuery) : "Historial"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Historial</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "historial" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -650,20 +650,20 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "informados"}
-                          className={`py-2 ${selectedMenuItem !== "informados" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "informados" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "informados"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("informados")}
                         >
-                          <Bell className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Bell className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Informados", searchQuery) : "Informados"}</span>}
-                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium -mr-1">4</span>}
+                          {!sidebarCollapsed && <span className="ml-auto text-sm px-1.5 py-0.5 rounded-full bg-brand-yellow/20 text-brand-yellow font-medium -mr-1">4</span>}
                           {sidebarCollapsed && <span className="tooltip">Informados (4)</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "informados" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -672,19 +672,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "templates"}
-                          className={`py-2 ${selectedMenuItem !== "templates" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "templates" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "templates"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("templates")}
                         >
-                          <FileText className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <FileText className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Templates", searchQuery) : "Templates"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Templates</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "templates" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}
@@ -693,19 +693,19 @@ export default function GmailInterface() {
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={selectedMenuItem === "eliminados"}
-                          className={`py-2 ${selectedMenuItem !== "eliminados" ? "hover:bg-gray-700/50" : "hover:text-white"} sidebar-menu-button tooltip-container ${
+                          className={`py-2 ${selectedMenuItem !== "eliminados" ? "hover:bg-white/10 hover:backdrop-blur-sm" : "hover:text-brand-yellow"} sidebar-menu-button tooltip-container transition-all duration-200 ${
                             selectedMenuItem === "eliminados"
-                              ? "text-gray-300 font-medium w-full"
-                              : "text-gray-300"
+                              ? "text-brand-yellow font-medium w-full bg-brand-dark-blue/30"
+                              : "text-white"
                           } ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                           onClick={() => handleMenuItemClick("eliminados")}
                         >
-                          <Trash2 className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"}`} />
+                          <Trash2 className={`h-4 w-4 ${sidebarCollapsed ? "" : "mr-3"} transition-transform duration-200 group-hover:scale-110`} />
                           {!sidebarCollapsed && <span>{searchQuery ? highlightText("Eliminados", searchQuery) : "Eliminados"}</span>}
                           {sidebarCollapsed && <span className="tooltip">Eliminados</span>}
                         </SidebarMenuButton>
                         {selectedMenuItem === "eliminados" && (
-                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-blue-400 rounded-r-md"></div>
+                          <div className="absolute left-[-2px] top-0 h-full w-1 bg-brand-yellow rounded-r-md"></div>
                         )}
                       </SidebarMenuItem>
                     )}

@@ -299,16 +299,17 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-1 text-center pb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <FileText className="h-8 w-8 text-white" />
+            <div className="bg-brand-dark-blue p-4 rounded-full shadow-lg">
+              <FileText className="h-10 w-10 text-brand-yellow" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
-          <CardDescription>Sistema de Gestión Documental</CardDescription>
+          <CardTitle className="text-3xl font-bold text-brand-dark-blue">Iniciar Sesión</CardTitle>
+          <CardDescription className="text-gray-600 text-base">Sistema de Gestión Documental</CardDescription>
+          <p className="text-sm text-brand-medium-blue font-medium mt-2">GAD Municipal del Cantón Mejía</p>
         </CardHeader>
         <CardContent>
           {/* Connection Status */}
@@ -361,7 +362,7 @@ export function LoginForm() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-brand-green hover:bg-green-700 text-white font-medium py-2.5" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -389,10 +390,10 @@ export function LoginForm() {
           )}
 
           {/* Connection Information */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
+          <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600 border border-gray-200">
             <div className="flex items-center mb-2">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              <span className="font-semibold">Información de Conexión</span>
+              <AlertCircle className="h-3 w-3 mr-1 text-brand-medium-blue" />
+              <span className="font-semibold text-brand-dark-blue">Información de Conexión</span>
             </div>
             <p>• Conexión: DIRECTA al backend</p>
             <p>• Backend URL: {BACKEND_LOGIN_URL}</p>

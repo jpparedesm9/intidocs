@@ -4,85 +4,87 @@
 
 @layer base {
   :root {
+    /* GAD Municipal del Cantón Mejía - Colores basados en el Manual de Marca */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 48% 15%; /* #142a44 - Azul oscuro */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 48% 15%; /* #142a44 - Azul oscuro */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 48% 15%; /* #142a44 - Azul oscuro */
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 149 97% 27%; /* #028738 - Verde institucional */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 214 49% 23%; /* #153c60 - Azul medio */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 0 0% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 46 97% 52%; /* #fcc108 - Amarillo/Dorado */
+    --accent-foreground: 215 48% 15%; /* #142a44 - Azul oscuro */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 220 13% 50%; /* Cambiado a un valor neutral que no se usará */
+    --ring: 149 97% 27%; /* #028738 - Verde institucional */
 
     --radius: 0.5rem;
 
-    /* Sidebar variables */
-    --sidebar-background: 0 0% 13%;
+    /* Sidebar variables con colores de la marca */
+    --sidebar-background: 149 97% 27%; /* #028738 - Verde institucional */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-primary: 46 97% 52%; /* #fcc108 - Amarillo/Dorado */
+    --sidebar-primary-foreground: 149 97% 27%; /* #028738 - Verde institucional */
+    --sidebar-accent: 149 97% 20%; /* Verde más oscuro */
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 149 97% 30%; /* Borde verde */
+    --sidebar-ring: 46 97% 52%; /* #fcc108 - Amarillo/Dorado */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Tema oscuro con colores de la marca */
+    --background: 215 48% 10%; /* Versión oscura del azul oscuro */
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 48% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 48% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 149 97% 35%; /* Verde institucional más claro */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 214 49% 30%; /* Azul medio más claro */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 48% 15%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 46 97% 60%; /* Amarillo más claro */
+    --accent-foreground: 215 48% 15%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 215 48% 20%;
+    --input: 215 48% 20%;
+    --ring: 149 97% 35%; /* Verde institucional */
 
-    /* Sidebar variables */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar variables para tema oscuro */
+    --sidebar-background: 215 48% 8%; /* Azul muy oscuro */
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 46 97% 52%; /* Amarillo/Dorado */
+    --sidebar-primary-foreground: 215 48% 15%;
+    --sidebar-accent: 215 48% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 215 48% 20%;
+    --sidebar-ring: 46 97% 52%; /* Amarillo/Dorado */
   }
 }
 
@@ -119,8 +121,8 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #1a73e8;
-  border-color: #1a73e8;
+  background-color: #028738; /* Verde institucional */
+  border-color: #028738;
 }
 
 input[type="checkbox"]:checked::after {
@@ -135,8 +137,8 @@ input[type="checkbox"]:checked::after {
 }
 
 input[type="checkbox"]:hover {
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2);
+  border-color: #028738; /* Verde institucional */
+  box-shadow: 0 0 0 1px rgba(2, 135, 56, 0.2);
 }
 
 /* Document editor styles */
@@ -214,7 +216,7 @@ input[type="checkbox"]:hover {
 }
 
 .email-item-selected {
-  @apply bg-blue-50;
+  @apply bg-green-50;
 }
 
 .email-item-unread {
@@ -810,7 +812,7 @@ label:has(+ [data-radix-select-trigger][data-state="open"]) {
 /* Ensure select triggers and labels remain visible when dropdown is open */
 [data-radix-select-trigger][data-state="open"],
 [data-radix-select-trigger]:focus-within {
-  border-color: #3b82f6 !important;
+  border-color: #028738 !important; /* Verde institucional */
 }
 
 /* Ensure combobox options remain visible and interactive */
@@ -897,7 +899,7 @@ div:has(> [data-radix-select-trigger][data-state="open"]) label {
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
-  color: #3b82f6 !important; /* Blue color to indicate focus state */
+  color: #028738 !important; /* Verde institucional para indicar estado de foco */
 }
 
 /* Form styles to fix label visibility */
@@ -981,8 +983,8 @@ div:has(> label + [data-radix-dropdown-menu-trigger]) {
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: rgba(66, 153, 225, 0.2);
-  color: rgba(186, 230, 253, 0.9);
+  background-color: rgba(252, 193, 8, 0.2); /* Amarillo con transparencia */
+  color: #fcc108; /* Amarillo institucional */
   margin-left: auto;
 }
 
