@@ -1717,8 +1717,8 @@ export function TaskManagement(): JSX.Element {
                     </Select>
                   </div>
 
-                  {/* Botón de Elaborar Informe iprus - Solo visible cuando se selecciona "Menores" */}
-                  {tipoObservaciones === 'Menores' && (
+                  {/* Botón de Elaborar Informe iprus - Solo visible cuando se selecciona "Ninguna" */}
+                  {tipoObservaciones === 'Ninguna' && (
                     <div className="pt-4">
                       <Button
                         variant="outline"
